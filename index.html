@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>내 파일함</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f8;--card:#fff;--ink:#15171c;--sub:#6b7280;--line:#e5e7eb;--accent:#2f5bff;--soft:#eaf0ff;--red:#e5484d;--redsoft:#fdecec;--r:16px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,textarea{font:inherit}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 120px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 18px}
+h1{font-size:24px;font-weight:800;margin:0;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+h1 .dot{width:28px;height:28px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:15px}
+.hright{display:flex;align-items:center;gap:10px}
+.usage{font-size:12px;color:var(--sub);text-align:right}
+.iconbtn{font-size:12px;color:var(--sub);padding:6px 10px;border-radius:9px;border:1px solid var(--line);background:var(--card)}
+.drop{background:var(--card);border:2px dashed #c9d3ff;border-radius:var(--r);padding:26px 16px;text-align:center;transition:.15s;position:relative;overflow:hidden}
+.drop.over,.drop:hover{border-color:var(--accent);background:var(--soft)}
+.drop input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+.drop .plus{width:46px;height:46px;border-radius:50%;background:var(--accent);color:#fff;font-size:28px;line-height:46px;margin:0 auto 10px}
+.drop .big{font-size:17px;font-weight:700}.drop .small{font-size:13px;color:var(--sub);margin-top:6px}
+.note{margin-top:12px;background:var(--card);border-radius:var(--r);padding:12px;display:flex;gap:10px;align-items:flex-end;border:1px solid var(--line)}
+.note textarea{flex:1;border:0;resize:none;font-size:15px;outline:none;min-height:24px;max-height:200px;background:transparent;color:var(--ink)}
+.btn{background:var(--accent);color:#fff;font-weight:700;border-radius:11px;padding:10px 16px;font-size:14px;white-space:nowrap}
+.btn:disabled{opacity:.4;cursor:default}.btn.ghost{background:var(--soft);color:var(--accent)}.btn.red{background:var(--red)}
+.uploads{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.up{background:var(--card);border-radius:12px;padding:10px 12px;font-size:13px;display:flex;align-items:center;gap:10px;border:1px solid var(--line)}
+.up .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up.err{border-color:#f5c2c2;background:var(--redsoft);color:#a01c20}
+.spin{width:16px;height:16px;border:2.5px solid var(--soft);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:26px 0 12px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.tab{padding:8px 14px;border-radius:99px;font-size:14px;font-weight:500;color:var(--sub);background:var(--card);border:1px solid var(--line);white-space:nowrap}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.selbtn{font-size:14px;font-weight:600;color:var(--accent);padding:8px 4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+@media (max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}}
+.item{background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--line);position:relative;display:flex;flex-direction:column}
+.item.sel{outline:3px solid var(--accent);outline-offset:-1px}
+.thumb{aspect-ratio:1/1;background:#eef0f4;display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ficon{width:56px;height:68px;border-radius:8px;background:#fff;border:1.5px solid #d6dae3;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--accent)}
+.notebody{padding:14px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;flex:1;max-height:190px;overflow:hidden;cursor:pointer;color:#333}
+.notebody a{color:var(--accent)}
+.item.isnote{grid-column:span 2}
+.meta{padding:9px 11px 4px;font-size:12px;color:var(--sub)}
+.meta .name{color:var(--ink);font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
+.acts{display:flex;border-top:1px solid var(--line);margin-top:auto}
+.acts button{flex:1;padding:10px 0;font-size:13px;font-weight:600;color:var(--accent)}
+.acts button+button{border-left:1px solid var(--line)}
+.acts button.del{color:var(--red);flex:0 0 52px}
+.check{position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.95);border:2px solid #c3c8d2;display:none;place-items:center;font-size:14px;color:#fff;z-index:2}
+.selecting .check{display:grid}.item.sel .check{background:var(--accent);border-color:var(--accent)}
+.empty{text-align:center;color:var(--sub);padding:50px 10px;font-size:14px}
+.selbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%) translateY(150%);background:var(--ink);color:#fff;border-radius:16px;padding:10px 10px 10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);transition:.2s;z-index:20;width:min(560px,calc(100% - 24px))}
+.selbar.show{transform:translateX(-50%) translateY(0)}.selbar .cnt{flex:1;font-weight:600;font-size:14px}
+.modal{position:fixed;inset:0;background:rgba(10,12,18,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.show{display:flex}
+.dlg{background:#fff;border-radius:18px;padding:22px;width:min(380px,100%)}
+.dlg h3{margin:0 0 8px;font-size:17px}.dlg p{margin:0 0 16px;color:var(--sub);font-size:14px;line-height:1.5}
+.dlg input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;font-size:15px;outline:none}
+.dlg input:focus{border-color:var(--accent)}
+.dlg .row{display:flex;gap:8px;justify-content:flex-end}
+.viewer{background:#fff;border-radius:18px;max-width:min(900px,100%);max-height:90vh;overflow:auto}
+.viewer img,.viewer video{display:block;max-width:100%;max-height:80vh;margin:0 auto}
+.viewer pre{white-space:pre-wrap;word-break:break-word;padding:22px;margin:0;font-family:inherit;font-size:15px;line-height:1.6;min-width:min(600px,80vw)}
+.viewer .vbar{display:flex;gap:8px;justify-content:flex-end;padding:10px;border-top:1px solid var(--line);position:sticky;bottom:0;background:#fff}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-200%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;transition:.2s;max-width:90%}
+.toast.show{transform:translateX(-50%) translateY(0)}
+/* 잠금 화면 */
+.lock{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.lockcard{background:#fff;border-radius:22px;padding:30px 24px;width:min(380px,100%);text-align:center;box-shadow:0 20px 50px rgba(20,30,60,.08)}
+.lockcard .dot{width:54px;height:54px;border-radius:16px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:24px;margin:0 auto 14px}
+.lockcard h2{margin:0 0 6px;font-size:22px}.lockcard p{margin:0 0 18px;color:var(--sub);font-size:14px}
+.lockcard input[type=password]{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font-size:16px;outline:none;text-align:center}
+.lockcard input[type=password]:focus{border-color:var(--accent)}
+.lockcard .btn{width:100%;margin-top:12px;padding:13px}
+.lockcard label{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--sub);margin-top:12px}
+.lockerr{color:var(--red);font-size:13px;min-height:18px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="lock" id="lock">
+  <form class="lockcard" id="lockForm">
+    <div class="dot">↕</div>
+    <h2>내 파일함</h2>
+    <p>비밀번호를 입력하세요</p>
+    <input type="password" id="pw" autocomplete="current-password" autofocus>
+    <button class="btn" type="submit" id="unlockBtn">열기</button>
+    <label><input type="checkbox" id="remember"> 이 기기에서 기억하기 (내 기기에서만)</label>
+    <div class="lockerr" id="lockErr"></div>
+  </form>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <header>
+    <h1><span class="dot">↕</span>내 파일함</h1>
+    <div class="hright"><div class="usage" id="usage"></div><button class="iconbtn" id="menuBtn">설정</button></div>
+  </header>
+  <div class="drop" id="drop">
+    <div class="plus">+</div>
+    <div class="big">파일·사진 올리기</div>
+    <div class="small">눌러서 선택 · 끌어다 놓기 · PC에선 Ctrl+V · 파일당 50MB까지</div>
+    <input type="file" id="picker" multiple aria-label="파일 선택">
+  </div>
+  <div class="note">
+    <textarea id="noteIn" rows="1" placeholder="글·링크·메모 붙여넣기"></textarea>
+    <button class="btn" id="noteBtn" disabled>저장</button>
+  </div>
+  <div class="uploads" id="uploads"></div>
+  <div class="toolbar">
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-f="all">전체</button><button class="tab" data-f="image">사진</button><button class="tab" data-f="video">영상</button><button class="tab" data-f="file">파일</button><button class="tab" data-f="note">글</button>
+    </div>
+    <button class="selbtn" id="selToggle">선택</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">불러오는 중…</div>
+</div>
+
+<div class="selbar" id="selbar"><span class="cnt" id="selCnt">0개 선택</span><button class="btn ghost" id="selDown">받기</button><button class="btn red" id="selDel">삭제</button></div>
+<div class="modal" id="confirm"><div class="dlg"><h3 id="cTitle"></h3><p id="cMsg"></p><div class="row"><button class="btn ghost" id="cNo">취소</button><button class="btn red" id="cYes">삭제</button></div></div></div>
+<div class="modal" id="menu"><div class="dlg">
+  <h3>설정</h3>
+  <p>비밀번호 바꾸기: 새 비밀번호로 사이트가 다시 잠겨요. 1분쯤 뒤부터 적용돼요.</p>
+  <input type="password" id="newPw1" placeholder="새 비밀번호 (8자 이상)" autocomplete="new-password">
+  <input type="password" id="newPw2" placeholder="한 번 더" autocomplete="new-password">
+  <div class="row" style="justify-content:space-between"><button class="btn ghost" id="logout">잠그기</button><span><button class="btn ghost" id="menuX">닫기</button> <button class="btn" id="chPw">변경</button></span></div>
+</div></div>
+<div class="modal" id="viewModal"><div class="viewer" id="viewer"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const VAULT = /*VAULT*/{"s":"EbpvJa2p18dw5Z42f40jgA==","v":"5K046V1e6cS+HUpn","c":"aeyGuh7i23rrAcahlKFz3GGMLCNWL/1o+CSZVkBJ6v/oJomeMW9paBW4ZegCPJHo61iOxvYmCD7vidVXirWCUYJtGb+DeSYVivBCGXwpAGkNwHjTDToaY4gjySWdiTdaHje27gETKs3b0/AHsg==","i":600000}/*END*/;
+const OWNER='JuYoung0622', REPO='drop-files', SITE_REPO='drop', BRANCH='main';
+const MAXB=50*1024*1024;
+(() => {
+const $=id=>document.getElementById(id);
+const isPhone=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+let TOKEN=null, items=[], filter='all', selecting=false; const selected=new Set();
+
+// ---------- 암호화 ----------
+const b64=u=>btoa(String.fromCharCode(...new Uint8Array(u)));
+const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function keyFrom(pw,salt,iter){ const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }
+async function decryptToken(pw){ const k=await keyFrom(pw,ub64(VAULT.s),VAULT.i); const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(VAULT.v)},k,ub64(VAULT.c)); return new TextDecoder().decode(pt); }
+async function encryptToken(pw,tok){ const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), i=600000;
+  const k=await keyFrom(pw,salt,i); const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(tok)); return {s:b64(salt),v:b64(iv),c:b64(ct),i}; }
+
+// ---------- GitHub API ----------
+async function gh(path,opt={}){
+  const r=await fetch('https://api.github.com'+path,{...opt,headers:{'Authorization':'Bearer '+TOKEN,'Accept':opt.raw?'application/vnd.github.raw':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(opt.body?{'Content-Type':'application/json'}:{})}});
+  if(!r.ok){ const e=new Error('GitHub '+r.status); e.status=r.status; throw e; }
+  return opt.raw?r.blob():(r.status===204?null:r.json());
+}
+const enc=p=>p.split('/').map(encodeURIComponent).join('/');
+function fileB64(blob){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(String(fr.result).split(',')[1]||''); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(blob); }); }
+
+// ---------- 유틸 ----------
+const extOf=n=>{ const m=/\.([^.\/]+)$/.exec(n||''); return m?m[1].toLowerCase():''; };
+const fmt=b=>b<1024?b+'B':b<1048576?(b/1024).toFixed(0)+'KB':b<1073741824?(b/1048576).toFixed(1)+'MB':(b/1073741824).toFixed(2)+'GB';
+const ago=t=>{ const s=(Date.now()-t)/1000; if(s<60) return '방금'; if(s<3600) return Math.floor(s/60)+'분 전'; if(s<86400) return Math.floor(s/3600)+'시간 전'; if(s<604800) return Math.floor(s/86400)+'일 전'; const d=new Date(t); return (d.getMonth()+1)+'/'+d.getDate(); };
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const linkify=s=>esc(s).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+const IMG=['png','jpg','jpeg','gif','webp','bmp','heic','heif','avif'], VID=['mp4','mov','webm','m4v','avi','mkv'];
+const kindOf=ext=>IMG.includes(ext)?'image':VID.includes(ext)?'video':'file';
+let tT; const toast=m=>{ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); };
+function confirmBox(title,msg){ return new Promise(res=>{ $('cTitle').textContent=title; $('cMsg').textContent=msg; $('confirm').classList.add('show');
+  const done=v=>{ $('confirm').classList.remove('show'); $('cYes').onclick=$('cNo').onclick=null; res(v); }; $('cYes').onclick=()=>done(true); $('cNo').onclick=()=>done(false); }); }
+const stamp=()=>{ const d=new Date(), p=n=>String(n).padStart(2,'0'); return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds()); };
+const rid=()=>Math.random().toString(36).slice(2,6);
+function parseTime(s){ const m=/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)/.exec(s); return m?new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+m[6]).getTime():0; }
+
+// ---------- 잠금 해제 ----------
+async function unlock(pw,remember){
+  try{ TOKEN=await decryptToken(pw); }catch(e){ $('lockErr').textContent='비밀번호가 틀렸어요.'; return false; }
+  if(remember){ try{ localStorage.setItem('drop_t',TOKEN); }catch(e){} }
+  $('lock').style.display='none'; $('app').style.display='block'; load(); return true;
+}
+$('lockForm').addEventListener('submit',async e=>{ e.preventDefault(); $('lockErr').textContent=''; $('unlockBtn').disabled=true; $('unlockBtn').textContent='여는 중…';
+  await unlock($('pw').value,$('remember').checked); $('unlockBtn').disabled=false; $('unlockBtn').textContent='열기'; });
+try{ const t=localStorage.getItem('drop_t'); if(t){ TOKEN=t; $('lock').style.display='none'; $('app').style.display='block'; setTimeout(load); } }catch(e){}
+
+// ---------- 목록 ----------
+async function load(){
+  try{
+    const tree=await gh(`/repos/${OWNER}/${REPO}/git/trees/${BRANCH}?recursive=1`);
+    items=tree.tree.filter(x=>x.type==='blob'&&(x.path.startsWith('files/')||x.path.startsWith('notes/'))).map(x=>{
+      if(x.path.startsWith('notes/')){ const f=x.path.slice(6); const [ts,dev]=f.split('_'); return {path:x.path,sha:x.sha,size:x.size,kind:'note',time:parseTime(ts),device:dev||'',name:'메모'}; }
+      const parts=x.path.split('/'); const [ts,dev]=parts[1].split('_'); const name=parts.slice(2).join('/'); const ext=extOf(name);
+      return {path:x.path,sha:x.sha,size:x.size,kind:kindOf(ext),ext,time:parseTime(ts),device:dev||'',name};
+    }).sort((a,b)=>b.time-a.time);
+  }catch(e){
+    if(e.status===401){ try{localStorage.removeItem('drop_t');}catch(_){ } location.reload(); return; }
+    if(e.status===404||e.status===409){ items=[]; } else { $('empty').textContent='불러오지 못했어요 ('+(e.status||'네트워크')+')'; return; }
+  }
+  for(const id of [...selected]) if(!items.some(i=>i.path===id)) selected.delete(id);
+  render(); updateUsage(); updateSelbar();
+}
+function updateUsage(){ const tot=items.reduce((a,b)=>a+b.size,0); $('usage').textContent=items.length+'개 · '+fmt(tot); }
+
+// ---------- 미리보기 (이미지/메모는 실제 내용을 가져옴) ----------
+const blobCache=new Map();
+async function rawBlob(it){ if(blobCache.has(it.path)) return blobCache.get(it.path); const p=gh(`/repos/${OWNER}/${REPO}/contents/${enc(it.path)}?ref=${BRANCH}`,{raw:true}); blobCache.set(it.path,p); return p; }
+const io=new IntersectionObserver(ents=>{ for(const en of ents){ if(!en.isIntersecting) continue; io.unobserve(en.target); const it=en.target.__it;
+  if(it.kind==='image' && !['heic','heif'].includes(it.ext) && it.size<15*1024*1024) rawBlob(it).then(b=>{ en.target.innerHTML='<img alt="">'; en.target.firstChild.src=URL.createObjectURL(b); }).catch(()=>{});
+  if(it.kind==='note') rawBlob(it).then(b=>b.text()).then(t=>{ it.text=t; en.target.innerHTML=linkify(t); }).catch(()=>{ en.target.textContent='(불러오기 실패)'; });
+} },{rootMargin:'200px'});
+
+function render(){
+  const g=$('grid'); g.innerHTML='';
+  const list=items.filter(i=>filter==='all'||i.kind===filter);
+  $('empty').style.display=list.length?'none':'block';
+  $('empty').textContent=filter==='all'?'아직 아무것도 없어요. 위에서 올려보세요.':'이 종류는 아직 없어요.';
+  for(const it of list){
+    const el=document.createElement('div'); el.className='item'+(it.kind==='note'?' isnote':'')+(selected.has(it.path)?' sel':'');
+    let top;
+    if(it.kind==='note') top='<div class="notebody">'+(it.text!=null?linkify(it.text):'…')+'</div>';
+    else top='<div class="thumb"><div class="ficon">'+esc((it.ext||'FILE').slice(0,4).toUpperCase())+'</div></div>';
+    el.innerHTML='<span class="check">✓</span>'+top+'<div class="meta">'+(it.kind!=='note'?'<div class="name">'+esc(it.name)+'</div>'+fmt(it.size)+' · ':'')+ago(it.time)+(it.device?' · '+esc(it.device):'')+'</div>'+
+      '<div class="acts">'+(it.kind==='note'?'<button data-a="copy">복사</button>':'')+'<button data-a="down">받기</button><button class="del" data-a="del">삭제</button></div>';
+    const lazy=el.querySelector(it.kind==='note'?'.notebody':'.thumb'); lazy.__it=it; if(it.kind==='note'?it.text==null:it.kind==='image') io.observe(lazy);
+    el.addEventListener('click',e=>{ const a=e.target.closest('[data-a]');
+      if(selecting&&!a){ selected.has(it.path)?selected.delete(it.path):selected.add(it.path); el.classList.toggle('sel'); updateSelbar(); return; }
+      if(!a){ if(e.target.closest('.thumb,.notebody')&&!e.target.closest('a')) openView(it); return; }
+      if(a.dataset.a==='copy') copyText(it); else if(a.dataset.a==='down') download(it); else askDelete([it]); });
+    g.append(el);
+  }
+}
+function updateSelbar(){ $('selCnt').textContent=selected.size+'개 선택'; $('selbar').classList.toggle('show',selecting); }
+
+// ---------- 올리기 ----------
+let queue=Promise.resolve();
+function uploadFiles(files){ for(const f of files) queue=queue.then(()=>uploadOne(f)); queue.then(load); }
+async function uploadOne(f){
+  const row=document.createElement('div'); row.className='up'; row.innerHTML='<span class="spin"></span><span class="nm"></span><span class="sz"></span>';
+  const name=(f.name||('붙여넣기.'+((f.type.split('/')[1])||'bin'))).replace(/[\\\/:*?"<>|]/g,'_');
+  row.querySelector('.nm').textContent=name; row.querySelector('.sz').textContent=fmt(f.size); $('uploads').prepend(row);
+  const fail=m=>{ row.className='up err'; row.querySelector('.spin').outerHTML='<span>⚠️</span>'; row.querySelector('.sz').textContent=m; setTimeout(()=>row.remove(),9000); };
+  if(f.size>MAXB) return fail('50MB 초과');
+  try{
+    const content=await fileB64(f);
+    const path=`files/${stamp()}_${isPhone?'폰':'PC'}_${rid()}/${name}`;
+    await gh(`/repos/${OWNER}/${REPO}/contents/${enc(path)}`,{method:'PUT',body:JSON.stringify({message:'upload '+name,content,branch:BRANCH})});
+    row.remove();
+  }catch(e){ fail(e.status===413?'너무 큼':e.status===422?'실패(중복?)':'실패 '+(e.status||'')); }
+}
+$('picker').addEventListener('change',()=>{ uploadFiles([...$('picker').files]); $('picker').value=''; });
+['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); if(ev==='drop'||!e.relatedTarget) $('drop').classList.remove('over'); }));
+document.addEventListener('drop',e=>{ if(TOKEN&&e.dataTransfer&&e.dataTransfer.files.length) uploadFiles([...e.dataTransfer.files]); });
+document.addEventListener('paste',e=>{ const fs=[...(e.clipboardData&&e.clipboardData.files||[])]; if(TOKEN&&fs.length&&document.activeElement!==$('noteIn')){ e.preventDefault(); uploadFiles(fs); } });
+
+// ---------- 글 ----------
+const grow=()=>{ const t=$('noteIn'); t.style.height='auto'; t.style.height=Math.min(200,t.scrollHeight)+'px'; $('noteBtn').disabled=!t.value.trim(); };
+$('noteIn').addEventListener('input',grow);
+$('noteIn').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) saveNote(); });
+$('noteBtn').onclick=saveNote;
+async function saveNote(){
+  const t=$('noteIn').value; if(!t.trim()) return; $('noteBtn').disabled=true;
+  try{ const content=await fileB64(new Blob([t])); const path=`notes/${stamp()}_${isPhone?'폰':'PC'}_${rid()}.txt`;
+    await gh(`/repos/${OWNER}/${REPO}/contents/${enc(path)}`,{method:'PUT',body:JSON.stringify({message:'note',content,branch:BRANCH})});
+    $('noteIn').value=''; grow(); load();
+  }catch(e){ toast('저장 실패 '+(e.status||'')); $('noteBtn').disabled=false; }
+}
+
+// ---------- 받기 / 복사 / 보기 ----------
+function saveAs(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.append(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
+async function download(it){
+  try{ toast('받는 중…'); const b=await rawBlob(it); saveAs(b,it.kind==='note'?('메모-'+new Date(it.time).toISOString().slice(0,10)+'.txt'):it.name); }
+  catch(e){ blobCache.delete(it.path); toast('받기 실패 '+(e.status||'')); }
+}
+async function copyText(it){ try{ const t=it.text!=null?it.text:await (await rawBlob(it)).text(); await navigator.clipboard.writeText(t); toast('복사했어요'); }catch(e){ toast('복사가 막혔어요. 길게 눌러 직접 복사해주세요.'); } }
+async function openView(it){
+  const v=$('viewer'); v.innerHTML='<pre>불러오는 중…</pre>'; $('viewModal').classList.add('show');
+  try{
+    if(it.kind==='note'){ const t=it.text!=null?it.text:await (await rawBlob(it)).text(); v.innerHTML='<pre>'+linkify(t)+'</pre>'; }
+    else if(it.kind==='image'&&!['heic','heif'].includes(it.ext)){ const b=await rawBlob(it); v.innerHTML='<img alt="">'; v.firstChild.src=URL.createObjectURL(b); }
+    else if(it.kind==='video'&&['mp4','webm','m4v','mov'].includes(it.ext)){ const b=await rawBlob(it); v.innerHTML='<video controls playsinline></video>'; v.firstChild.src=URL.createObjectURL(b); }
+    else { $('viewModal').classList.remove('show'); return download(it); }
+  }catch(e){ v.innerHTML='<pre>불러오기 실패</pre>'; }
+  const bar=document.createElement('div'); bar.className='vbar';
+  if(it.kind==='note'){ const c=document.createElement('button'); c.className='btn ghost'; c.textContent='복사'; c.onclick=()=>copyText(it); bar.append(c); }
+  const d=document.createElement('button'); d.className='btn ghost'; d.textContent='받기'; d.onclick=()=>download(it);
+  const x=document.createElement('button'); x.className='btn'; x.textContent='닫기'; x.onclick=()=>$('viewModal').classList.remove('show');
+  bar.append(d,x); v.append(bar);
+}
+$('viewModal').addEventListener('click',e=>{ if(e.target.id==='viewModal') $('viewModal').classList.remove('show'); });
+
+// ---------- 삭제 ----------
+async function askDelete(list){ if(!list.length) return;
+  if(!await confirmBox(list.length===1?'삭제할까요?':list.length+'개 삭제할까요?','지우면 되돌릴 수 없어요.')) return;
+  for(const it of list){ try{ await gh(`/repos/${OWNER}/${REPO}/contents/${enc(it.path)}`,{method:'DELETE',body:JSON.stringify({message:'delete',sha:it.sha,branch:BRANCH})}); selected.delete(it.path); }catch(e){ toast('삭제 실패: '+it.name); } }
+  load();
+}
+
+// ---------- 선택 ----------
+$('selToggle').onclick=()=>{ selecting=!selecting; if(!selecting) selected.clear(); $('selToggle').textContent=selecting?'완료':'선택'; $('app').classList.toggle('selecting',selecting); updateSelbar(); render(); };
+$('selDel').onclick=()=>askDelete(items.filter(i=>selected.has(i.path)));
+$('selDown').onclick=async()=>{ const list=items.filter(i=>selected.has(i.path)); if(!list.length) return; if(list.length===1) return download(list[0]);
+  toast('묶는 중…'); const zip=new JSZip(), used=new Set();
+  for(const it of list){ let n=it.kind==='note'?('메모-'+it.sha.slice(0,6)+'.txt'):it.name; while(used.has(n)) n=n.replace(/(\.[^.]+)?$/,m=>'-1'+m); used.add(n); try{ zip.file(n,await rawBlob(it)); }catch(e){} }
+  saveAs(await zip.generateAsync({type:'blob'}),'내파일함-'+new Date().toISOString().slice(0,10)+'.zip'); };
+$('tabs').onclick=e=>{ const b=e.target.closest('.tab'); if(!b) return; filter=b.dataset.f; document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b)); render(); };
+
+// ---------- 설정: 잠그기 / 비밀번호 변경 ----------
+$('menuBtn').onclick=()=>$('menu').classList.add('show');
+$('menuX').onclick=()=>$('menu').classList.remove('show');
+$('logout').onclick=()=>{ try{localStorage.removeItem('drop_t');}catch(e){} location.reload(); };
+$('chPw').onclick=async()=>{
+  const a=$('newPw1').value, b=$('newPw2').value;
+  if(a.length<8) return toast('8자 이상으로 정해주세요'); if(a!==b) return toast('두 번 입력한 비밀번호가 달라요');
+  try{ $('chPw').disabled=true;
+    const v=await encryptToken(a,TOKEN);
+    const cur=await gh(`/repos/${OWNER}/${SITE_REPO}/contents/index.html?ref=${BRANCH}`);
+    const html=await (await gh(`/repos/${OWNER}/${SITE_REPO}/contents/index.html?ref=${BRANCH}`,{raw:true})).text();
+    const nh=html.replace(/\/\*VAULT\*\/[\s\S]*?\/\*END\*\//,'/*VAULT*/'+JSON.stringify(v)+'/*END*/');
+    await gh(`/repos/${OWNER}/${SITE_REPO}/contents/index.html`,{method:'PUT',body:JSON.stringify({message:'change password',content:await fileB64(new Blob([nh])),sha:cur.sha,branch:BRANCH})});
+    toast('바꿨어요. 1분쯤 뒤부터 새 비밀번호로 열려요.'); $('menu').classList.remove('show'); $('newPw1').value=$('newPw2').value='';
+  }catch(e){ toast('변경 실패 '+(e.status||'')); } finally{ $('chPw').disabled=false; }
+};
+setInterval(()=>{ if(items.length) render(); },60000);
+})();
+</script>
+</body>
+</html>
