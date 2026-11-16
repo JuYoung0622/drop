@@ -116,31 +116,46 @@ h1 .dot{width:28px;height:28px;border-radius:9px;background:var(--accent);displa
 .gcard .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .gerr{color:var(--red);font-size:13px;min-height:18px;margin-top:8px}
 .ghint{font-size:12px;color:var(--sub);margin-top:6px;line-height:1.5}
+.pend{font-size:14px;color:var(--ink);background:var(--soft);border-radius:12px;padding:12px;margin:6px 0 4px;line-height:1.6}
+.pend b{color:var(--accent)}
+.dot.small{width:22px;height:22px}
+.cnt-badge{background:var(--red);color:#fff;border-radius:99px;font-size:10px;font-weight:800;padding:1px 6px;margin-left:4px}
+.adm h4{margin:16px 0 6px;font-size:14px}
+.adm .trow .nm span{display:block}
+.adm .trow button{padding:7px 10px;font-size:12px}
+.tag{font-size:10px;font-weight:800;border-radius:5px;padding:1px 5px;margin-left:4px;background:#f1f3f7;color:#555}
+.tag.ok{background:#e6f6ec;color:#17803d}.tag.wait{background:var(--amber);color:#8a6d1a}
+.splist{max-height:50vh;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.splist button{text-align:left;padding:13px 14px;border:1px solid var(--line);border-radius:10px;font-weight:600;font-size:15px}
+.splist button.last{border-color:var(--accent);background:var(--soft);color:var(--accent)}
+.splist button small{font-weight:500;color:var(--sub);margin-left:6px}
+.subj small{opacity:.65;font-weight:500;margin-left:3px}
+.new{background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:5px;padding:1px 5px;margin-left:5px;vertical-align:1px}
+.sortsel{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:7px 10px;font-size:13px;color:var(--sub);outline:none}
 </style>
 </head>
 <body>
-<!-- 1단계: 반 입장 코드 -->
-<div class="gate" id="gate1">
-  <form class="gcard" id="codeForm">
-    <div class="dot">↕</div><h2>반 공유함</h2><p>반 입장 코드를 입력하세요</p>
-    <input type="password" id="code" autocomplete="off" autofocus>
-    <button class="btn" type="submit" id="codeBtn">입장</button>
-    <label><input type="checkbox" id="rememberCode" style="width:auto;margin:0"> 이 기기에서 기억하기</label>
-    <div class="gerr" id="codeErr"></div>
-  </form>
-</div>
-<!-- 2단계: 로그인 / 가입 -->
-<div class="gate hide" id="gate2">
+<!-- 로그인 / 가입 -->
+<div class="gate" id="gate2">
   <form class="gcard" id="authForm">
-    <div class="dot">👤</div><h2 id="authTitle">로그인</h2>
+    <div class="dot">↕</div><h2 id="authTitle">반 공유함</h2><p>관리자가 허용한 기기에서만 들어올 수 있어요</p>
     <div class="seg"><button type="button" class="on" data-m="login">로그인</button><button type="button" data-m="signup">처음이에요</button></div>
     <input id="nick" placeholder="닉네임 (2~12자)" autocomplete="username" maxlength="12">
-    <input type="password" id="upw" placeholder="비밀번호 (4자 이상)" autocomplete="current-password">
+    <input type="password" id="upw" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
     <input type="password" id="upw2" placeholder="비밀번호 확인" class="hide" autocomplete="new-password">
     <button class="btn" type="submit" id="authBtn">로그인</button>
     <div class="gerr" id="authErr"></div>
     <div class="ghint">다른 사이트에서 쓰는 비밀번호는 쓰지 마세요.<br>닉네임: 한글·영문·숫자·점·하이픈</div>
   </form>
+</div>
+<!-- 허용 기다리는 중 -->
+<div class="gate hide" id="gateWait">
+  <div class="gcard">
+    <div class="dot">⏳</div><h2>허용 기다리는 중</h2>
+    <div class="pend"><b id="wNick"></b>님의 <b id="wDev"></b> 접속 요청을 보냈어요.<br>관리자가 허용하면 자동으로 들어가져요.</div>
+    <p style="font-size:12.5px;margin-top:10px">이 창을 닫아도 요청은 남아 있어요. 허용된 뒤 다시 로그인하면 돼요.</p>
+    <button class="btn ghost" id="waitBack" type="button">처음으로</button>
+  </div>
 </div>
 
 <div class="wrap hide" id="app">
@@ -150,6 +165,8 @@ h1 .dot{width:28px;height:28px;border-radius:9px;background:var(--accent);displa
       <span class="me" id="meChip"></span>
       <button class="iconbtn" id="trashBtn">휴지통</button>
       <button class="iconbtn hide" id="noticeBtn">공지 쓰기</button>
+      <button class="iconbtn hide" id="adminBtn">관리</button>
+      <button class="iconbtn" id="pwBtn">비번 변경</button>
       <button class="iconbtn" id="logoutBtn">로그아웃</button>
     </div>
   </header>
@@ -158,7 +175,7 @@ h1 .dot{width:28px;height:28px;border-radius:9px;background:var(--accent);displa
   <div class="drop" id="drop">
     <div class="plus">+</div>
     <div class="big" id="dropTitle">파일 올리기</div>
-    <div class="small">눌러서 선택 · 끌어다 놓기 · PC에선 Ctrl+V · 파일당 50MB까지</div>
+    <div class="small">눌러서 선택 · 끌어다 놓기 · PC에선 Ctrl+V · 파일당 25MB까지</div>
     <input type="file" id="picker" multiple aria-label="파일 선택">
   </div>
   <div class="note">
@@ -171,6 +188,7 @@ h1 .dot{width:28px;height:28px;border-radius:9px;background:var(--accent);displa
       <button class="tab on" data-f="all">전체</button><button class="tab" data-f="code">코드</button><button class="tab" data-f="doc">문서</button><button class="tab" data-f="image">사진</button><button class="tab" data-f="video">영상</button><button class="tab" data-f="file">기타</button><button class="tab" data-f="note">글</button>
     </div>
     <div class="search"><input id="q" placeholder="파일명·닉네임·글 검색"></div>
+    <select id="sort" class="sortsel" aria-label="정렬"><option value="new">최신순</option><option value="old">오래된순</option><option value="name">이름순</option></select>
     <label class="mine"><input type="checkbox" id="onlyMine"> 내 것만</label>
     <button class="selbtn" id="selToggle">선택</button>
   </div>
@@ -182,290 +200,327 @@ h1 .dot{width:28px;height:28px;border-radius:9px;background:var(--accent);displa
 <div class="modal" id="confirm"><div class="dlg"><h3 id="cTitle"></h3><p id="cMsg"></p><div class="row"><button class="btn ghost" id="cNo">취소</button><button class="btn red" id="cYes">확인</button></div></div></div>
 <div class="modal" id="prompt"><div class="dlg"><h3 id="pTitle"></h3><p id="pMsg"></p><textarea id="pIn" rows="3"></textarea><div class="row"><button class="btn ghost" id="pNo">취소</button><button class="btn" id="pYes">확인</button></div></div></div>
 <div class="modal" id="trash"><div class="dlg" style="width:min(560px,100%)"><h3>휴지통</h3><p>최근 지워진 항목이에요. 올린 사람이나 관리자가 되살릴 수 있어요.</p><div id="trashList">불러오는 중…</div><div class="row" style="margin-top:12px"><button class="btn ghost" id="trashX">닫기</button></div></div></div>
+<div class="modal" id="subjPick"><div class="dlg"><h3>어느 과목에 올릴까요?</h3><p>목록에서 골라주세요.</p><div class="splist" id="spList"></div><div class="row"><button class="btn ghost" id="spNew" type="button">+ 새 과목</button><button class="btn ghost" id="spNo" type="button">취소</button></div></div></div>
+<div class="modal" id="admin"><div class="dlg adm" style="width:min(620px,100%)"><h3>관리</h3><p>새 기기는 여기서 허용해야 들어올 수 있어요. 허용을 취소하면 그 기기는 바로 못 들어와요.</p><div id="admBody">불러오는 중…</div><div class="row" style="margin-top:12px"><button class="btn ghost" id="admX">닫기</button></div></div></div>
+<div class="modal" id="pwModal"><div class="dlg"><h3 id="pwTitle">비밀번호 변경</h3><p id="pwMsg">새 비밀번호를 두 번 입력하세요.</p><input type="password" id="pwA" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password"><input type="password" id="pwB" placeholder="한 번 더" autocomplete="new-password"><div class="gerr" id="pwErr" style="text-align:left"></div><div class="row"><button class="btn ghost" id="pwNo">취소</button><button class="btn" id="pwYes">바꾸기</button></div></div></div>
 <div class="modal" id="viewModal"><div class="viewer" id="viewer"></div></div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
-const VAULT = /*VAULT*/{"s":"gznneMC+GxkAO/ucYNQttA==","v":"ah9AllWKWTrEH64u","c":"UzgxahninA1pInxqfTZf7gShBuUiRHWcEeFuqn3RDhLlX0OMGmuSyfJDLLRE7r/xWyii8yN9Bhg+oMHgCOKSd75i6hXrsmRHoFq2XdgKxUHWx+2NH95r9WLyT/8Cgtr7fhkDg31t47RccBm4kA==","i":600000}/*END*/;
-const OWNER='JuYoung0622', REPO='class-files', BRANCH='main', MAXB=50*1024*1024;
+const API = /*API*/'https://class-share.kimjuyoung0622.workers.dev'/*END*/;
+const MAXB = 25 * 1024 * 1024;
 (() => {
-const $=id=>document.getElementById(id);
-let TOKEN=null, ME=null, ROLE='member', items=[], users={}, subjects=['기타'], notices=[], curSubj='전체', filter='all', selecting=false, query='', onlyMine=false;
-const selected=new Set();
+const $ = id => document.getElementById(id);
+let TOK = null, ME = null, ROLE = 'member', items = [], subjects = ['기타'], notices = [], curSubj = '전체', filter = 'all', selecting = false, query = '', onlyMine = false, pendingCnt = 0, sortMode = 'new', seenSet = false;
+const selected = new Set();
+let SEEN = 0;
 
 // ---------- 공통 ----------
-const enc=new TextEncoder();
-const b64=u=>{ let s=''; const a=new Uint8Array(u); for(let i=0;i<a.length;i+=0x8000) s+=String.fromCharCode.apply(null,a.subarray(i,i+0x8000)); return btoa(s); };
-const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function pbk(pw,salt,it,use){ const base=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey','deriveBits']);
-  if(use==='bits') return crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:it,hash:'SHA-256'},base,256);
-  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:it,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,[use]); }
-async function hashPw(pw,saltB64){ return b64(await pbk(pw,ub64(saltB64),100000,'bits')); }
-const extOf=n=>{ const m=/\.([^.\/]+)$/.exec(n||''); return m?m[1].toLowerCase():''; };
-const fmt=b=>b<1024?b+'B':b<1048576?(b/1024).toFixed(0)+'KB':b<1073741824?(b/1048576).toFixed(1)+'MB':(b/1073741824).toFixed(2)+'GB';
-const ago=t=>{ const s=(Date.now()-t)/1000; if(s<60) return '방금'; if(s<3600) return Math.floor(s/60)+'분 전'; if(s<86400) return Math.floor(s/3600)+'시간 전'; if(s<604800) return Math.floor(s/86400)+'일 전'; const d=new Date(t); return (d.getMonth()+1)+'/'+d.getDate(); };
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const linkify=s=>esc(s).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
-const IMG=['png','jpg','jpeg','gif','webp','bmp','heic','heif','avif','svg'], VID=['mp4','mov','webm','m4v','avi','mkv'];
-const CODE={py:'python',js:'javascript',mjs:'javascript',ts:'typescript',tsx:'typescript',jsx:'javascript',java:'java',c:'c',h:'c',cpp:'cpp',cc:'cpp',hpp:'cpp',cs:'csharp',kt:'kotlin',swift:'swift',go:'go',rs:'rust',rb:'ruby',php:'php',lua:'lua',r:'r',sql:'sql',sh:'bash',bat:'dos',ps1:'powershell',html:'xml',htm:'xml',xml:'xml',css:'css',scss:'scss',json:'json',yml:'yaml',yaml:'yaml',md:'markdown',txt:'plaintext',csv:'plaintext',ini:'ini',toml:'ini',m:'matlab',ipynb:'json',vb:'vbnet',asm:'x86asm',s:'x86asm'};
-const DOC=['pdf','doc','docx','hwp','hwpx','ppt','pptx','xls','xlsx','odt','rtf','pages','key','numbers'];
-const kindOf=ext=>IMG.includes(ext)?'image':VID.includes(ext)?'video':CODE[ext]?'code':DOC.includes(ext)?'doc':'file';
-let tT; const toast=m=>{ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2800); };
-function confirmBox(title,msg,yes='확인'){ return new Promise(res=>{ $('cTitle').textContent=title; $('cMsg').textContent=msg; $('cYes').textContent=yes; $('confirm').classList.add('show');
-  const done=v=>{ $('confirm').classList.remove('show'); $('cYes').onclick=$('cNo').onclick=null; res(v); }; $('cYes').onclick=()=>done(true); $('cNo').onclick=()=>done(false); }); }
-function promptBox(title,msg,val=''){ return new Promise(res=>{ $('pTitle').textContent=title; $('pMsg').textContent=msg; $('pIn').value=val; $('prompt').classList.add('show'); setTimeout(()=>$('pIn').focus(),50);
-  const done=v=>{ $('prompt').classList.remove('show'); $('pYes').onclick=$('pNo').onclick=null; res(v); }; $('pYes').onclick=()=>done($('pIn').value.trim()); $('pNo').onclick=()=>done(null); }); }
-const stamp=()=>{ const d=new Date(), p=n=>String(n).padStart(2,'0'); return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds()); };
-const rid=()=>Math.random().toString(36).slice(2,6);
-function parseTime(s){ const m=/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)/.exec(s||''); return m?new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+m[6]).getTime():0; }
-const cleanName=s=>s.replace(/[\\\/:*?"<>|_]/g,'-').trim();
-const NICK_RE=/^[가-힣A-Za-z0-9.\-]{2,12}$/;
-const isAdmin=()=>ROLE==='admin';
+const enc = new TextEncoder();
+const b64 = u => { let s = ''; const a = new Uint8Array(u); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
+const ub64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function hashPw(pw, saltB64) { const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']); return b64(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: ub64(saltB64), iterations: 100000, hash: 'SHA-256' }, base, 256)); }
+const newSalt = () => b64(crypto.getRandomValues(new Uint8Array(16)));
+const extOf = n => { const m = /\.([^.\/]+)$/.exec(n || ''); return m ? m[1].toLowerCase() : ''; };
+const fmt = b => b < 1024 ? b + 'B' : b < 1048576 ? (b / 1024).toFixed(0) + 'KB' : b < 1073741824 ? (b / 1048576).toFixed(1) + 'MB' : (b / 1073741824).toFixed(2) + 'GB';
+const ago = t => { const s = (Date.now() - t) / 1000; if (s < 60) return '방금'; if (s < 3600) return Math.floor(s / 60) + '분 전'; if (s < 86400) return Math.floor(s / 3600) + '시간 전'; if (s < 604800) return Math.floor(s / 86400) + '일 전'; const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate(); };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const linkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+const IMG = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'heic', 'heif', 'avif', 'svg'], VID = ['mp4', 'mov', 'webm', 'm4v', 'avi', 'mkv'];
+const CODE = { py: 'python', js: 'javascript', mjs: 'javascript', ts: 'typescript', tsx: 'typescript', jsx: 'javascript', java: 'java', c: 'c', h: 'c', cpp: 'cpp', cc: 'cpp', hpp: 'cpp', cs: 'csharp', kt: 'kotlin', swift: 'swift', go: 'go', rs: 'rust', rb: 'ruby', php: 'php', lua: 'lua', r: 'r', sql: 'sql', sh: 'bash', bat: 'dos', ps1: 'powershell', html: 'xml', htm: 'xml', xml: 'xml', css: 'css', scss: 'scss', json: 'json', yml: 'yaml', yaml: 'yaml', md: 'markdown', txt: 'plaintext', csv: 'plaintext', ini: 'ini', toml: 'ini', m: 'matlab', ipynb: 'json', vb: 'vbnet', asm: 'x86asm', s: 'x86asm' };
+const DOC = ['pdf', 'doc', 'docx', 'hwp', 'hwpx', 'ppt', 'pptx', 'xls', 'xlsx', 'odt', 'rtf', 'pages', 'key', 'numbers'];
+const kindOf = ext => IMG.includes(ext) ? 'image' : VID.includes(ext) ? 'video' : CODE[ext] ? 'code' : DOC.includes(ext) ? 'doc' : 'file';
+let tT; const toast = m => { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tT); tT = setTimeout(() => t.classList.remove('show'), 2800); };
+function confirmBox(title, msg, yes = '확인') { return new Promise(res => { $('cTitle').textContent = title; $('cMsg').textContent = msg; $('cYes').textContent = yes; $('confirm').classList.add('show');
+  const done = v => { $('confirm').classList.remove('show'); $('cYes').onclick = $('cNo').onclick = null; res(v); }; $('cYes').onclick = () => done(true); $('cNo').onclick = () => done(false); }); }
+function promptBox(title, msg, val = '') { return new Promise(res => { $('pTitle').textContent = title; $('pMsg').textContent = msg; $('pIn').value = val; $('prompt').classList.add('show'); setTimeout(() => $('pIn').focus(), 50);
+  const done = v => { $('prompt').classList.remove('show'); $('pYes').onclick = $('pNo').onclick = null; res(v); }; $('pYes').onclick = () => done($('pIn').value.trim()); $('pNo').onclick = () => done(null); }); }
+function parseTime(s) { const m = /^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)/.exec(s || ''); return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime() : 0; }
+const cleanName = s => s.replace(/[\\\/:*?"<>|_]/g, '-').trim();
+const NICK_RE = /^[가-힣A-Za-z0-9.\-]{2,12}$/;
+const isAdmin = () => ROLE === 'admin';
+const store = { get: k => { try { return localStorage.getItem(k); } catch (_) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (_) { } }, del: k => { try { localStorage.removeItem(k); } catch (_) { } } };
 
-// ---------- GitHub API ----------
-async function gh(path,opt={}){
-  const r=await fetch('https://api.github.com'+path,{cache:'no-store',...opt,headers:{'Authorization':'Bearer '+TOKEN,'Accept':opt.raw?'application/vnd.github.raw':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(opt.body?{'Content-Type':'application/json'}:{})}});
-  if(!r.ok){ const e=new Error('GitHub '+r.status); e.status=r.status; throw e; }
-  return opt.raw?r.blob():(r.status===204?null:r.json());
+// ---------- 기기 ----------
+let DEV = store.get('cls_dev');
+if (!DEV) { DEV = b64(crypto.getRandomValues(new Uint8Array(32))).replace(/[+/=]/g, ''); store.set('cls_dev', DEV); }
+function devName() { const u = navigator.userAgent;
+  const os = /iPhone/.test(u) ? 'iPhone' : /iPad/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1) ? 'iPad' : /Android/.test(u) ? (/Mobile/.test(u) ? 'Android 폰' : 'Android 태블릿') : /Windows/.test(u) ? 'Windows PC' : /Macintosh/.test(u) ? 'Mac' : /CrOS/.test(u) ? 'Chromebook' : /Linux/.test(u) ? 'Linux' : '기기';
+  const br = /SamsungBrowser/.test(u) ? '삼성 인터넷' : /Whale/.test(u) ? '웨일' : /Edg\//.test(u) ? 'Edge' : /KAKAOTALK/.test(u) ? '카카오톡' : /Firefox|FxiOS/.test(u) ? 'Firefox' : /CriOS|Chrome/.test(u) ? 'Chrome' : /Safari/.test(u) ? 'Safari' : '브라우저';
+  return os + ' · ' + br; }
+
+// ---------- 서버 ----------
+async function api(path, opt = {}) {
+  const headers = { ...(TOK ? { 'Authorization': 'Bearer ' + TOK } : {}), ...(opt.json !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(opt.headers || {}) };
+  let r; try { r = await fetch(API + path, { method: opt.method || (opt.json !== undefined ? 'POST' : 'GET'), headers, body: opt.json !== undefined ? JSON.stringify(opt.json) : opt.body, cache: 'no-store' }); }
+  catch (e) { const er = new Error('서버에 연결이 안 돼요'); er.status = 0; throw er; }
+  if (opt.raw && r.ok) return r.blob();
+  let data = null; try { data = await r.json(); } catch (_) { }
+  if (!r.ok) { const e = new Error((data && data.err) || ('오류 ' + r.status)); e.status = r.status; if (r.status === 401 && TOK && !opt.noKick) kick(e.message); throw e; }
+  return data;
 }
-const encP=p=>p.split('/').map(encodeURIComponent).join('/');
-const C=p=>`/repos/${OWNER}/${REPO}/contents/${encP(p)}`;
-function fileB64(blob){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(String(fr.result).split(',')[1]||''); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(blob); }); }
-async function readJson(path,def){ try{ const m=await gh(C(path)+'?ref='+BRANCH); return {data:JSON.parse(new TextDecoder().decode(ub64(m.content.replace(/\n/g,'')))),sha:m.sha}; }catch(e){ if(e.status===404) return {data:def,sha:null}; throw e; } }
-async function updateJson(path,def,mutate,msg){ // 동시 수정 충돌 시 재시도
-  for(let i=0;i<4;i++){ const {data,sha}=await readJson(path,def); const nd=mutate(JSON.parse(JSON.stringify(data))); if(nd===undefined) return data;
-    try{ await gh(C(path),{method:'PUT',body:JSON.stringify({message:msg,content:b64(enc.encode(JSON.stringify(nd,null,1))),branch:BRANCH,...(sha?{sha}:{})})}); return nd; }
-    catch(e){ if(e.status!==409&&e.status!==422) throw e; await new Promise(r=>setTimeout(r,400+Math.random()*600)); } }
-  throw new Error('충돌');
-}
+function kick(msg) { TOK = null; store.del('cls_tok'); ME = null; $('app').classList.add('hide'); $('gateWait').classList.add('hide'); $('gate2').classList.remove('hide'); $('authErr').textContent = msg || ''; }
 
-// ---------- 1단계: 입장 코드 ----------
-async function unlockCode(code){ const k=await pbk(code,ub64(VAULT.s),VAULT.i,'decrypt'); return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(VAULT.v)},k,ub64(VAULT.c))); }
-$('codeForm').addEventListener('submit',async e=>{ e.preventDefault(); $('codeErr').textContent=''; $('codeBtn').disabled=true; $('codeBtn').textContent='확인 중…';
-  try{ TOKEN=await unlockCode($('code').value.trim()); if($('rememberCode').checked){ try{localStorage.setItem('cls_t',TOKEN);}catch(_){ } } toGate2(); }
-  catch(_){ $('codeErr').textContent='입장 코드가 틀렸어요.'; }
-  $('codeBtn').disabled=false; $('codeBtn').textContent='입장'; });
-function toGate2(){ $('gate1').classList.add('hide');
-  try{ const u=JSON.parse(localStorage.getItem('cls_u')||'null'); if(u&&u.nick){ return loginAs(u.nick); } }catch(_){ }
-  $('gate2').classList.remove('hide'); $('nick').focus(); }
-
-// ---------- 2단계: 로그인 / 가입 ----------
-let mode='login';
-document.querySelectorAll('#authForm .seg button').forEach(b=>b.onclick=()=>{ mode=b.dataset.m; document.querySelectorAll('#authForm .seg button').forEach(x=>x.classList.toggle('on',x===b));
-  $('upw2').classList.toggle('hide',mode!=='signup'); $('authTitle').textContent=$('authBtn').textContent=mode==='signup'?'가입하기':'로그인'; $('authErr').textContent=''; });
-$('authForm').addEventListener('submit',async e=>{ e.preventDefault(); $('authErr').textContent='';
-  const nick=$('nick').value.trim(), pw=$('upw').value;
-  if(!NICK_RE.test(nick)) return $('authErr').textContent='닉네임은 2~12자, 한글·영문·숫자·점·하이픈만 돼요.';
-  if(pw.length<4) return $('authErr').textContent='비밀번호는 4자 이상이에요.';
-  $('authBtn').disabled=true;
-  try{
-    if(mode==='signup'){
-      if(pw!==$('upw2').value){ $('authErr').textContent='비밀번호 확인이 달라요.'; return; }
-      const salt=b64(crypto.getRandomValues(new Uint8Array(16))), h=await hashPw(pw,salt); let taken=false;
-      await updateJson('users.json',{users:{}},d=>{ if(Object.keys(d.users).some(k=>k.toLowerCase()===nick.toLowerCase())){ taken=true; return undefined; } d.users[nick]={s:salt,h,role:'member',t:Date.now()}; return d; },'signup|'+nick);
-      if(taken){ $('authErr').textContent='이미 있는 닉네임이에요.'; return; }
-    } else {
-      const {data}=await readJson('users.json',{users:{}}); const u=data.users[nick];
-      if(!u||await hashPw(pw,u.s)!==u.h){ $('authErr').textContent='닉네임이나 비밀번호가 틀렸어요.'; return; }
-    }
-    try{ localStorage.setItem('cls_u',JSON.stringify({nick})); }catch(_){ }
-    await loginAs(nick);
-  }catch(err){ if(err.status===401) return resetAll(); $('authErr').textContent='오류가 났어요 ('+(err.status||err.message)+')'; }
-  finally{ $('authBtn').disabled=false; }
+// ---------- 로그인 / 가입 ----------
+let mode = 'login', waitTimer = null, waitCred = null;
+document.querySelectorAll('#authForm .seg button').forEach(b => b.onclick = () => { mode = b.dataset.m; document.querySelectorAll('#authForm .seg button').forEach(x => x.classList.toggle('on', x === b));
+  $('upw2').classList.toggle('hide', mode !== 'signup'); $('authBtn').textContent = mode === 'signup' ? '가입 요청' : '로그인'; $('authErr').textContent = ''; });
+$('authForm').addEventListener('submit', async e => { e.preventDefault(); $('authErr').textContent = '';
+  const nick = $('nick').value.trim(), pw = $('upw').value;
+  if (!NICK_RE.test(nick)) return $('authErr').textContent = '닉네임은 2~12자, 한글·영문·숫자·점·하이픈만 돼요.';
+  if (mode === 'signup' && pw.length < 6) return $('authErr').textContent = '비밀번호는 6자 이상이에요.';
+  if (mode === 'signup' && pw !== $('upw2').value) return $('authErr').textContent = '비밀번호 확인이 달라요.';
+  $('authBtn').disabled = true; const old = $('authBtn').textContent; $('authBtn').textContent = '확인 중…';
+  try {
+    if (mode === 'signup') { const s = newSalt(), h = await hashPw(pw, s); await api('/api/signup', { json: { nick, s, h, dev: DEV, dn: devName() } }); waitCred = { nick, h }; showWait(nick); }
+    else { const { s } = await api('/api/salt', { json: { nick } }); const h = await hashPw(pw, s); waitCred = { nick, h }; await tryLogin(); }
+  } catch (err) { $('authErr').textContent = err.message; }
+  finally { $('authBtn').disabled = false; $('authBtn').textContent = old; }
 });
-async function loginAs(nick){
-  const {data}=await readJson('users.json',{users:{}}).catch(e=>{ if(e.status===401) resetAll(); throw e; }); users=data.users;
-  if(!users[nick]){ try{localStorage.removeItem('cls_u');}catch(_){ } $('gate2').classList.remove('hide'); return; }
-  ME=nick; ROLE=users[nick].role||'member';
-  $('gate2').classList.add('hide'); $('app').classList.remove('hide');
-  $('meChip').innerHTML=esc(ME)+(isAdmin()?' <span class="badge">관리자</span>':'');
-  $('noticeBtn').classList.toggle('hide',!isAdmin());
-  loadAll();
+async function tryLogin() {
+  const r = await api('/api/login', { json: { nick: waitCred.nick, h: waitCred.h, dev: DEV, dn: devName() } });
+  if (r.pending) return showWait(waitCred.nick);
+  clearInterval(waitTimer); waitCred = null; TOK = r.token; store.set('cls_tok', TOK); store.set('cls_nick', r.nick); enter(r.nick, r.role);
 }
-function resetAll(){ try{ localStorage.removeItem('cls_t'); localStorage.removeItem('cls_u'); }catch(_){ } location.reload(); }
-$('logoutBtn').onclick=()=>{ try{ localStorage.removeItem('cls_u'); }catch(_){ } location.reload(); };
-try{ const t=localStorage.getItem('cls_t'); if(t){ TOKEN=t; toGate2(); } }catch(_){ }
+function showWait(nick) { $('gate2').classList.add('hide'); $('gateWait').classList.remove('hide'); $('wNick').textContent = nick; $('wDev').textContent = devName();
+  clearInterval(waitTimer); waitTimer = setInterval(() => { if (!document.hidden && waitCred) tryLogin().catch(e => { if (e.status === 401 || e.status === 429) { clearInterval(waitTimer); waitCred = null; $('gateWait').classList.add('hide'); $('gate2').classList.remove('hide'); $('authErr').textContent = e.status === 401 ? '요청이 거절됐거나 계정이 없어졌어요.' : e.message; } }); }, 5000); }
+$('waitBack').onclick = () => { clearInterval(waitTimer); waitCred = null; $('gateWait').classList.add('hide'); $('gate2').classList.remove('hide'); };
+function enter(nick, role) {
+  ME = nick; ROLE = role || 'member';
+  $('gate2').classList.add('hide'); $('gateWait').classList.add('hide'); $('app').classList.remove('hide');
+  $('meChip').innerHTML = esc(ME) + (isAdmin() ? ' <span class="badge">관리자</span>' : '');
+  $('noticeBtn').classList.toggle('hide', !isAdmin()); $('adminBtn').classList.toggle('hide', !isAdmin());
+  load();
+}
+$('logoutBtn').onclick = () => { store.del('cls_tok'); location.reload(); };
+{ const t = store.get('cls_tok'); if (t) { TOK = t; enter(store.get('cls_nick') || '', 'member'); } }
 
 // ---------- 데이터 ----------
-async function loadAll(){ await Promise.all([loadMeta(),load()]); }
-async function loadMeta(){
-  try{ const [s,n]=await Promise.all([readJson('subjects.json',['기타']),readJson('notices.json',[])]); subjects=s.data.length?s.data:['기타']; notices=n.data; }catch(_){ }
-  renderSubjects(); renderNotices();
+async function load() {
+  let d;
+  try { d = await api('/api/list'); }
+  catch (e) { if (e.status !== 401) $('empty').textContent = '불러오지 못했어요 (' + e.message + ')'; return; }
+  if (d.me.nick !== ME || d.me.role !== ROLE) { ME = d.me.nick; ROLE = d.me.role; store.set('cls_nick', ME); $('meChip').innerHTML = esc(ME) + (isAdmin() ? ' <span class="badge">관리자</span>' : ''); $('noticeBtn').classList.toggle('hide', !isAdmin()); $('adminBtn').classList.toggle('hide', !isAdmin()); }
+  if (!seenSet) { seenSet = true; SEEN = +(store.get('cls_seen') || 0); store.set('cls_seen', String(Date.now())); }
+  subjects = d.subjects; notices = d.notices; if (curSubj !== '전체' && !subjects.includes(curSubj)) curSubj = '전체'; pendingCnt = d.pending || 0;
+  $('adminBtn').innerHTML = '관리' + (pendingCnt ? '<span class="cnt-badge">' + pendingCnt + '</span>' : '');
+  const textKeep = new Map(items.map(i => [i.path + i.sha, i.text]));
+  items = d.files.map(x => {
+    const parts = x.p.split('/'); let it;
+    if (parts[0] === 'notes') { const [ts, nick] = parts[2].replace(/\.txt$/, '').split('_'); it = { path: x.p, sha: x.h, size: x.s, kind: 'note', subj: parts[1], time: parseTime(ts), owner: nick || '', name: '글' }; }
+    else { const [ts, nick] = parts[2].split('_'); const name = parts.slice(3).join('/'), ext = extOf(name); it = { path: x.p, sha: x.h, size: x.s, kind: kindOf(ext), ext, subj: parts[1], time: parseTime(ts), owner: nick || '', name }; }
+    const t = textKeep.get(it.path + it.sha); if (t != null) it.text = t; return it;
+  }).sort((a, b) => b.time - a.time);
+  for (const id of [...selected]) if (!items.some(i => i.path === id)) selected.delete(id);
+  renderSubjects(); renderNotices(); render(); updateSelbar();
 }
-async function load(){
-  try{
-    const tree=await gh(`/repos/${OWNER}/${REPO}/git/trees/${BRANCH}?recursive=1`);
-    items=tree.tree.filter(x=>x.type==='blob'&&(x.path.startsWith('files/')||x.path.startsWith('notes/'))).map(x=>{
-      const parts=x.path.split('/');
-      if(parts[0]==='notes'){ const [ts,nick]=parts[2].replace(/\.txt$/,'').split('_'); return {path:x.path,sha:x.sha,size:x.size,kind:'note',subj:parts[1],time:parseTime(ts),owner:nick||'',name:'글'}; }
-      const [ts,nick]=parts[2].split('_'); const name=parts.slice(3).join('/'), ext=extOf(name);
-      return {path:x.path,sha:x.sha,size:x.size,kind:kindOf(ext),ext,subj:parts[1],time:parseTime(ts),owner:nick||'',name};
-    }).sort((a,b)=>b.time-a.time);
-  }catch(e){ if(e.status===401) return resetAll(); if(e.status===404||e.status===409) items=[]; else { $('empty').textContent='불러오지 못했어요 ('+(e.status||'네트워크')+')'; return; } }
-  for(const id of [...selected]) if(!items.some(i=>i.path===id)) selected.delete(id);
-  render(); updateSelbar();
-}
-const reload=()=>{ load(); setTimeout(load,2500); };
+$('sort').onchange = () => { sortMode = $('sort').value; render(); };
+const reload = () => { load(); setTimeout(load, 2500); };
 
 // ---------- 과목 / 공지 ----------
-function renderSubjects(){
-  const box=$('subjects'); box.innerHTML='';
-  for(const s of ['전체',...subjects]){ const b=document.createElement('button'); b.className='subj'+(s===curSubj?' on':''); b.textContent=s; b.onclick=()=>{ curSubj=s; renderSubjects(); render(); }; box.append(b); }
-  const add=document.createElement('button'); add.className='subj add'; add.textContent='+ 과목'; add.onclick=addSubject; box.append(add);
-  $('dropTitle').textContent=(curSubj==='전체'?'':'['+curSubj+'] ')+'파일 올리기';
+function renderSubjects() {
+  const box = $('subjects'); box.innerHTML = '';
+  for (const s of ['전체', ...subjects]) { const b = document.createElement('button'); b.className = 'subj' + (s === curSubj ? ' on' : ''); b.innerHTML = esc(s) + '<small>' + (s === '전체' ? items.length : items.filter(i => i.subj === s).length) + '</small>'; b.onclick = () => { curSubj = s; renderSubjects(); render(); }; box.append(b); }
+  const add = document.createElement('button'); add.className = 'subj add'; add.textContent = '+ 과목'; add.onclick = addSubject; box.append(add);
+  $('dropTitle').textContent = (curSubj === '전체' ? '' : '[' + curSubj + '] ') + '파일 올리기';
 }
-async function addSubject(){
-  const v=await promptBox('과목 추가','예: 자료구조, 경영학원론'); if(!v) return; const name=cleanName(v).slice(0,20); if(!name) return;
-  try{ subjects=await updateJson('subjects.json',['기타'],d=>{ if(d.includes(name)) return undefined; d.push(name); return d; },'subject|'+name+'|'+ME) || subjects; if(!subjects.includes(name)) subjects.push(name); curSubj=name; renderSubjects(); render(); }
-  catch(e){ toast('추가 실패'); }
+async function ensureSubject(v) { const name = cleanName(v).slice(0, 20); if (!name) return null; if (subjects.includes(name)) return name;
+  const r = await api('/api/subject', { json: { name } }); subjects = r.subjects; return r.name; }
+async function addSubject() {
+  const v = await promptBox('과목 추가', '예: 자료구조, 경영학원론'); if (!v) return;
+  try { const n = await ensureSubject(v); if (n) { curSubj = n; renderSubjects(); render(); } } catch (e) { toast('추가 실패: ' + e.message); }
 }
-function renderNotices(){
-  $('notices').innerHTML='';
-  for(const n of notices){ const d=document.createElement('div'); d.className='notice'; d.innerHTML='<span>📌</span><span class="t">'+linkify(n.text)+'</span><span class="by">'+esc(n.by)+' · '+ago(n.t)+'</span>'+(isAdmin()?'<button>내리기</button>':'');
-    if(isAdmin()) d.querySelector('button').onclick=async()=>{ if(!await confirmBox('공지를 내릴까요?','')) return; notices=await updateJson('notices.json',[],a=>a.filter(x=>x.id!==n.id),'notice-del|'+ME); renderNotices(); };
+function renderNotices() {
+  $('notices').innerHTML = '';
+  for (const n of notices) { const d = document.createElement('div'); d.className = 'notice'; d.innerHTML = '<span>📌</span><span class="t">' + linkify(n.text) + '</span><span class="by">' + esc(n.by) + ' · ' + ago(n.t) + '</span>' + (isAdmin() ? '<button>내리기</button>' : '');
+    if (isAdmin()) d.querySelector('button').onclick = async () => { if (!await confirmBox('공지를 내릴까요?', '')) return; try { notices = (await api('/api/notice-del', { json: { id: n.id } })).notices; renderNotices(); } catch (e) { toast(e.message); } };
     $('notices').append(d); }
 }
-$('noticeBtn').onclick=async()=>{ const v=await promptBox('공지 쓰기','맨 위에 고정돼요. 예: 자료구조 과제 금요일 23:59 마감'); if(!v) return;
-  try{ notices=await updateJson('notices.json',[],a=>{ a.unshift({id:rid()+Date.now(),text:v.slice(0,500),by:ME,t:Date.now()}); return a; },'notice|'+ME); renderNotices(); }catch(e){ toast('공지 실패'); } };
+$('noticeBtn').onclick = async () => { const v = await promptBox('공지 쓰기', '맨 위에 고정돼요. 예: 자료구조 과제 금요일 23:59 마감'); if (!v) return;
+  try { notices = (await api('/api/notice', { json: { text: v } })).notices; renderNotices(); } catch (e) { toast('공지 실패: ' + e.message); } };
 
 // ---------- 미리보기 ----------
-const blobCache=new Map();
-function rawBlob(it){ if(!blobCache.has(it.path)) blobCache.set(it.path,gh(C(it.path)+'?ref='+BRANCH,{raw:true}).catch(e=>{ blobCache.delete(it.path); throw e; })); return blobCache.get(it.path); }
-const io=new IntersectionObserver(ents=>{ for(const en of ents){ if(!en.isIntersecting) continue; io.unobserve(en.target); const it=en.target.__it;
-  if(it.kind==='image'&&!['heic','heif'].includes(it.ext)&&it.size<15e6) rawBlob(it).then(b=>{ const img=new Image(); img.alt=''; img.src=URL.createObjectURL(b); en.target.prepend(img); en.target.querySelector('.ficon')?.remove(); }).catch(()=>{});
-  else if(it.kind==='code'&&it.size<300000) rawBlob(it).then(b=>b.text()).then(t=>{ it.text=t; const p=document.createElement('div'); p.className='codepeek'; p.textContent=t.split('\n').slice(0,14).join('\n'); en.target.prepend(p); en.target.querySelector('.ficon')?.remove(); }).catch(()=>{});
-  else if(it.kind==='note') rawBlob(it).then(b=>b.text()).then(t=>{ it.text=t; en.target.innerHTML=linkify(t); }).catch(()=>{ en.target.textContent='(불러오기 실패)'; });
-} },{rootMargin:'200px'});
+const blobCache = new Map();
+function rawBlob(it) { const k = it.path + it.sha; if (!blobCache.has(k)) blobCache.set(k, api('/api/raw?path=' + encodeURIComponent(it.path), { raw: true }).catch(e => { blobCache.delete(k); throw e; })); return blobCache.get(k); }
+const io = new IntersectionObserver(ents => { for (const en of ents) { if (!en.isIntersecting) continue; io.unobserve(en.target); const it = en.target.__it;
+  if (it.kind === 'image' && !['heic', 'heif'].includes(it.ext) && it.size < 15e6) rawBlob(it).then(b => { const img = new Image(); img.alt = ''; img.src = URL.createObjectURL(b); en.target.prepend(img); en.target.querySelector('.ficon')?.remove(); }).catch(() => { });
+  else if (it.kind === 'code' && it.size < 300000) rawBlob(it).then(b => b.text()).then(t => { it.text = t; const p = document.createElement('div'); p.className = 'codepeek'; p.textContent = t.split('\n').slice(0, 14).join('\n'); en.target.prepend(p); en.target.querySelector('.ficon')?.remove(); }).catch(() => { });
+  else if (it.kind === 'note') rawBlob(it).then(b => b.text()).then(t => { it.text = t; en.target.innerHTML = linkify(t); }).catch(() => { en.target.textContent = '(불러오기 실패)'; });
+} }, { rootMargin: '200px' });
 
-const canDel=it=>isAdmin()||it.owner===ME;
-function visible(){
-  const q=query.toLowerCase();
-  return items.filter(i=>(curSubj==='전체'||i.subj===curSubj)&&(filter==='all'||i.kind===filter)&&(!onlyMine||i.owner===ME)&&
-    (!q||i.name.toLowerCase().includes(q)||i.owner.toLowerCase().includes(q)||i.subj.toLowerCase().includes(q)||(i.text&&i.text.toLowerCase().includes(q))));
+const canDel = it => isAdmin() || it.owner === ME;
+function visible() {
+  const q = query.toLowerCase();
+  const out = items.filter(i => (curSubj === '전체' || i.subj === curSubj) && (filter === 'all' || i.kind === filter) && (!onlyMine || i.owner === ME) &&
+    (!q || i.name.toLowerCase().includes(q) || i.owner.toLowerCase().includes(q) || i.subj.toLowerCase().includes(q) || (i.text && i.text.toLowerCase().includes(q))));
+  return sortMode === 'old' ? out.reverse() : sortMode === 'name' ? out.sort((x, y) => x.name.localeCompare(y.name, 'ko') || y.time - x.time) : out;
 }
-function render(){
-  const g=$('grid'); g.innerHTML=''; const list=visible();
-  $('empty').style.display=list.length?'none':'block';
-  $('empty').textContent=items.length?'조건에 맞는 항목이 없어요.':'아직 아무것도 없어요. 위에서 올려보세요.';
-  for(const it of list){
-    const el=document.createElement('div'); el.className='item'+(it.kind==='note'?' isnote':'')+(selected.has(it.path)?' sel':'');
-    const label={code:'코드',doc:'문서',image:'',video:'영상',file:''}[it.kind]||'';
-    const top=it.kind==='note'?'<div class="notebody">'+(it.text!=null?linkify(it.text):'…')+'</div>'
-      :'<div class="thumb"><div class="ficon">'+esc((it.ext||'FILE').slice(0,4).toUpperCase())+'</div>'+(label?'<span class="kind">'+label+'</span>':'')+'</div>';
-    el.innerHTML='<span class="check">✓</span>'+top+'<div class="meta">'+(it.kind!=='note'?'<div class="name" title="'+esc(it.name)+'">'+esc(it.name)+'</div>':'')+
-      '<span class="sj">'+esc(it.subj)+'</span><span class="who">'+esc(it.owner)+'</span> · '+ago(it.time)+(it.kind!=='note'?' · '+fmt(it.size):'')+'</div>'+
-      '<div class="acts">'+(it.kind==='note'||it.kind==='code'?'<button data-a="copy">복사</button>':'')+'<button data-a="down">받기</button>'+(canDel(it)?'<button class="del" data-a="del">삭제</button>':'')+'</div>';
-    const lazy=el.querySelector(it.kind==='note'?'.notebody':'.thumb'); lazy.__it=it;
-    if((it.kind==='note'&&it.text==null)||it.kind==='image'||it.kind==='code') io.observe(lazy);
-    el.addEventListener('click',e=>{ const a=e.target.closest('[data-a]');
-      if(selecting&&!a){ selected.has(it.path)?selected.delete(it.path):selected.add(it.path); el.classList.toggle('sel'); updateSelbar(); return; }
-      if(!a){ if(e.target.closest('.thumb,.notebody')&&!e.target.closest('a')) openView(it); return; }
-      if(a.dataset.a==='copy') copyText(it); else if(a.dataset.a==='down') download(it); else askDelete([it]); });
+function render() {
+  const g = $('grid'); g.innerHTML = ''; const list = visible();
+  $('empty').style.display = list.length ? 'none' : 'block';
+  $('empty').textContent = items.length ? '조건에 맞는 항목이 없어요.' : '아직 아무것도 없어요. 위에서 올려보세요.';
+  for (const it of list) {
+    const el = document.createElement('div'); el.className = 'item' + (it.kind === 'note' ? ' isnote' : '') + (selected.has(it.path) ? ' sel' : '');
+    const label = { code: '코드', doc: '문서', image: '', video: '영상', file: '' }[it.kind] || '';
+    const top = it.kind === 'note' ? '<div class="notebody">' + (it.text != null ? linkify(it.text) : '…') + '</div>'
+      : '<div class="thumb"><div class="ficon">' + esc((it.ext || 'FILE').slice(0, 4).toUpperCase()) + '</div>' + (label ? '<span class="kind">' + label + '</span>' : '') + '</div>';
+    el.innerHTML = '<span class="check">✓</span>' + top + '<div class="meta">' + (it.kind !== 'note' ? '<div class="name" title="' + esc(it.name) + '">' + esc(it.name) + '</div>' : '') +
+      '<span class="sj">' + esc(it.subj) + '</span><span class="who">' + esc(it.owner) + '</span> · ' + ago(it.time) + (it.kind !== 'note' ? ' · ' + fmt(it.size) : '') + (SEEN && it.time > SEEN && it.owner !== ME ? '<span class="new">NEW</span>' : '') + '</div>' +
+      '<div class="acts">' + (it.kind === 'note' || it.kind === 'code' ? '<button data-a="copy">복사</button>' : '') + '<button data-a="down">받기</button>' + (canDel(it) ? '<button class="del" data-a="del">삭제</button>' : '') + '</div>';
+    const lazy = el.querySelector(it.kind === 'note' ? '.notebody' : '.thumb'); lazy.__it = it;
+    if ((it.kind === 'note' && it.text == null) || it.kind === 'image' || it.kind === 'code') io.observe(lazy);
+    el.addEventListener('click', e => { const a = e.target.closest('[data-a]');
+      if (selecting && !a) { selected.has(it.path) ? selected.delete(it.path) : selected.add(it.path); el.classList.toggle('sel'); updateSelbar(); return; }
+      if (!a) { if (e.target.closest('.thumb,.notebody') && !e.target.closest('a')) openView(it); return; }
+      if (a.dataset.a === 'copy') copyText(it); else if (a.dataset.a === 'down') download(it); else askDelete([it]); });
     g.append(el);
   }
 }
-function updateSelbar(){ $('selCnt').textContent=selected.size+'개 선택'; $('selbar').classList.toggle('show',selecting); }
+function updateSelbar() { $('selCnt').textContent = selected.size + '개 선택'; $('selbar').classList.toggle('show', selecting); }
 
 // ---------- 올리기 ----------
-async function pickSubject(){ if(curSubj!=='전체') return curSubj;
-  if(subjects.length===1) return subjects[0];
-  const v=await promptBox('어느 과목에 올릴까요?','과목: '+subjects.join(', ')+'\n(새 이름을 쓰면 새 과목이 생겨요)',subjects[0]); if(!v) return null;
-  const name=cleanName(v).slice(0,20); if(!subjects.includes(name)){ try{ subjects=await updateJson('subjects.json',['기타'],d=>{ if(d.includes(name)) return undefined; d.push(name); return d; },'subject|'+name+'|'+ME)||subjects; }catch(_){ } if(!subjects.includes(name)) subjects.push(name); renderSubjects(); }
-  return name; }
-let queue=Promise.resolve();
-async function uploadFiles(files){ if(!files.length) return; const subj=await pickSubject(); if(!subj) return;
-  for(const f of files) queue=queue.then(()=>uploadOne(f,subj)); queue.then(reload); }
-async function uploadOne(f,subj){
-  const row=document.createElement('div'); row.className='up'; row.innerHTML='<span class="spin"></span><span class="nm"></span><span class="sz"></span>';
-  const name=(f.name||('붙여넣기.'+((f.type.split('/')[1])||'bin'))).replace(/[\\\/:*?"<>|]/g,'_');
-  row.querySelector('.nm').textContent='['+subj+'] '+name; row.querySelector('.sz').textContent=fmt(f.size); $('uploads').prepend(row);
-  const fail=m=>{ row.className='up err'; row.querySelector('.spin').outerHTML='<span>⚠️</span>'; row.querySelector('.sz').textContent=m; setTimeout(()=>row.remove(),9000); };
-  if(f.size>MAXB) return fail('50MB 초과');
-  try{ const path=`files/${subj}/${stamp()}_${ME}_${rid()}/${name}`;
-    await gh(C(path),{method:'PUT',body:JSON.stringify({message:'upload|'+path+'|'+ME,content:await fileB64(f),branch:BRANCH})}); row.remove(); }
-  catch(e){ fail(e.status===413?'너무 큼':'실패 '+(e.status||'')); }
+function pickSubject() { if (curSubj !== '전체') return Promise.resolve(curSubj);
+  return new Promise(res => { const box = $('spList'); box.innerHTML = ''; const last = store.get('cls_last');
+    const done = v => { $('subjPick').classList.remove('show'); $('spNo').onclick = null; if (v) store.set('cls_last', v); res(v); };
+    for (const s of subjects) { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = esc(s) + (s === last ? '<small>지난번에 고름</small>' : ''); if (s === last) b.className = 'last'; b.onclick = () => done(s); box.append(b); }
+    $('spNo').onclick = () => done(null);
+    $('spNew').onclick = async () => { $('subjPick').classList.remove('show'); const v = await promptBox('새 과목 만들기', '과목 이름을 정확히 적어주세요. 예: 자료구조'); if (!v) return done(null);
+      try { const n = await ensureSubject(v); renderSubjects(); done(n); } catch (e) { toast(e.message); done(null); } };
+    $('subjPick').classList.add('show'); const l = box.querySelector('.last'); if (l) l.scrollIntoView({ block: 'center' }); }); }
+function fileB64(blob) { return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1] || ''); fr.onerror = () => rej(fr.error); fr.readAsDataURL(blob); }); }
+let queue = Promise.resolve();
+async function uploadFiles(files) { if (!files.length) return; const subj = await pickSubject(); if (!subj) return;
+  for (const f of files) queue = queue.then(() => uploadOne(f, subj)); queue.then(reload); }
+async function uploadOne(f, subj) {
+  const row = document.createElement('div'); row.className = 'up'; row.innerHTML = '<span class="spin"></span><span class="nm"></span><span class="sz"></span>';
+  const name = (f.name || ('붙여넣기.' + ((f.type.split('/')[1]) || 'bin'))).replace(/[\\\/:*?"<>|]/g, '_');
+  row.querySelector('.nm').textContent = '[' + subj + '] ' + name; row.querySelector('.sz').textContent = fmt(f.size); $('uploads').prepend(row);
+  const fail = m => { row.className = 'up err'; row.querySelector('.spin').outerHTML = '<span>⚠️</span>'; row.querySelector('.sz').textContent = m; setTimeout(() => row.remove(), 9000); };
+  if (f.size > MAXB) return fail('25MB 초과');
+  try { await api('/api/upload?subj=' + encodeURIComponent(subj) + '&name=' + encodeURIComponent(name), { method: 'PUT', body: await fileB64(f), headers: { 'Content-Type': 'text/plain' } }); row.remove(); }
+  catch (e) { fail(e.message); }
 }
-$('picker').addEventListener('change',()=>{ uploadFiles([...$('picker').files]); $('picker').value=''; });
-['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); $('drop').classList.add('over'); }));
-['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); if(ev==='drop'||!e.relatedTarget) $('drop').classList.remove('over'); }));
-document.addEventListener('drop',e=>{ if(ME&&e.dataTransfer&&e.dataTransfer.files.length) uploadFiles([...e.dataTransfer.files]); });
-document.addEventListener('paste',e=>{ const fs=[...(e.clipboardData&&e.clipboardData.files||[])]; if(ME&&fs.length&&!['noteIn','pIn','q'].includes(document.activeElement.id)){ e.preventDefault(); uploadFiles(fs); } });
+$('picker').addEventListener('change', () => { uploadFiles([...$('picker').files]); $('picker').value = ''; });
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (ev === 'drop' || !e.relatedTarget) $('drop').classList.remove('over'); }));
+document.addEventListener('drop', e => { if (ME && e.dataTransfer && e.dataTransfer.files.length) uploadFiles([...e.dataTransfer.files]); });
+document.addEventListener('paste', e => { const fs = [...(e.clipboardData && e.clipboardData.files || [])]; if (ME && fs.length && !['noteIn', 'pIn', 'q', 'pwA', 'pwB'].includes(document.activeElement.id)) { e.preventDefault(); uploadFiles(fs); } });
 
 // ---------- 글 ----------
-const grow=()=>{ const t=$('noteIn'); t.style.height='auto'; t.style.height=Math.min(220,t.scrollHeight)+'px'; $('noteBtn').disabled=!t.value.trim(); };
-$('noteIn').addEventListener('input',grow);
-$('noteIn').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) saveNote(); });
-$('noteBtn').onclick=saveNote;
-async function saveNote(){ const t=$('noteIn').value; if(!t.trim()) return; const subj=await pickSubject(); if(!subj) return; $('noteBtn').disabled=true;
-  try{ const path=`notes/${subj}/${stamp()}_${ME}_${rid()}.txt`;
-    await gh(C(path),{method:'PUT',body:JSON.stringify({message:'note|'+path+'|'+ME,content:b64(enc.encode(t)),branch:BRANCH})}); $('noteIn').value=''; grow(); reload(); }
-  catch(e){ toast('저장 실패 '+(e.status||'')); $('noteBtn').disabled=false; } }
+const grow = () => { const t = $('noteIn'); t.style.height = 'auto'; t.style.height = Math.min(220, t.scrollHeight) + 'px'; $('noteBtn').disabled = !t.value.trim(); };
+$('noteIn').addEventListener('input', grow);
+$('noteIn').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) saveNote(); });
+$('noteBtn').onclick = saveNote;
+async function saveNote() { const t = $('noteIn').value; if (!t.trim()) return; const subj = await pickSubject(); if (!subj) return; $('noteBtn').disabled = true;
+  try { await api('/api/note', { json: { subj, text: t } }); $('noteIn').value = ''; grow(); reload(); }
+  catch (e) { toast('저장 실패: ' + e.message); $('noteBtn').disabled = false; } }
 
 // ---------- 받기 / 복사 / 보기 ----------
-function saveAs(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.append(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
-async function download(it){ try{ toast('받는 중…'); saveAs(await rawBlob(it),it.kind==='note'?(it.subj+'-'+it.owner+'-'+new Date(it.time).toISOString().slice(0,10)+'.txt'):it.name); }catch(e){ toast('받기 실패 '+(e.status||'')); } }
-async function textOf(it){ return it.text!=null?it.text:(it.text=await (await rawBlob(it)).text()); }
-async function copyText(it){ try{ await navigator.clipboard.writeText(await textOf(it)); toast('복사했어요'); }catch(e){ toast('복사가 막혔어요. 열어서 직접 복사해주세요.'); } }
-async function openView(it){
-  const v=$('viewer'); v.innerHTML='<div class="vhead"><span></span></div><div class="vbody"><pre>불러오는 중…</pre></div>'; v.querySelector('.vhead span').textContent=it.kind==='note'?(it.subj+' · '+it.owner):it.name;
-  $('viewModal').classList.add('show'); const body=v.querySelector('.vbody');
-  try{
-    if(it.kind==='note'){ body.innerHTML='<pre>'+linkify(await textOf(it))+'</pre>'; }
-    else if(it.kind==='code'){ const t=await textOf(it); const lang=CODE[it.ext]; let html;
-      try{ html=(lang&&lang!=='plaintext'&&window.hljs&&hljs.getLanguage(lang))?hljs.highlight(t,{language:lang}).value:esc(t); }catch(_){ html=esc(t); }
-      body.innerHTML='<pre class="code hljs">'+html.split('\n').map(l=>'<span class="ln">'+(l||' ')+'</span>').join('')+'</pre>'; }
-    else if(it.kind==='image'&&!['heic','heif'].includes(it.ext)){ const img=new Image(); img.src=URL.createObjectURL(await rawBlob(it)); body.innerHTML=''; body.append(img); }
-    else if(it.kind==='video'&&['mp4','webm','m4v','mov'].includes(it.ext)){ const vd=document.createElement('video'); vd.controls=true; vd.playsInline=true; vd.src=URL.createObjectURL(await rawBlob(it)); body.innerHTML=''; body.append(vd); }
-    else if(it.ext==='pdf'){ const fr=document.createElement('iframe'); fr.style.cssText='width:100%;height:78vh;border:0'; fr.src=URL.createObjectURL(new Blob([await rawBlob(it)],{type:'application/pdf'})); body.innerHTML=''; body.append(fr); }
+function saveAs(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+async function download(it) { try { toast('받는 중…'); saveAs(await rawBlob(it), it.kind === 'note' ? (it.subj + '-' + it.owner + '-' + new Date(it.time).toISOString().slice(0, 10) + '.txt') : it.name); } catch (e) { toast('받기 실패: ' + e.message); } }
+async function textOf(it) { return it.text != null ? it.text : (it.text = await (await rawBlob(it)).text()); }
+async function copyText(it) { try { await navigator.clipboard.writeText(await textOf(it)); toast('복사했어요'); } catch (e) { toast('복사가 막혔어요. 열어서 직접 복사해주세요.'); } }
+async function openView(it) {
+  const v = $('viewer'); v.innerHTML = '<div class="vhead"><span></span></div><div class="vbody"><pre>불러오는 중…</pre></div>'; v.querySelector('.vhead span').textContent = it.kind === 'note' ? (it.subj + ' · ' + it.owner) : it.name;
+  $('viewModal').classList.add('show'); const body = v.querySelector('.vbody');
+  try {
+    if (it.kind === 'note') { body.innerHTML = '<pre>' + linkify(await textOf(it)) + '</pre>'; }
+    else if (it.kind === 'code') { const t = await textOf(it); const lang = CODE[it.ext]; let html;
+      try { html = (lang && lang !== 'plaintext' && window.hljs && hljs.getLanguage(lang)) ? hljs.highlight(t, { language: lang }).value : esc(t); } catch (_) { html = esc(t); }
+      body.innerHTML = '<pre class="code hljs">' + html.split('\n').map(l => '<span class="ln">' + (l || ' ') + '</span>').join('') + '</pre>'; }
+    else if (it.kind === 'image' && !['heic', 'heif'].includes(it.ext)) { const img = new Image(); img.src = URL.createObjectURL(await rawBlob(it)); body.innerHTML = ''; body.append(img); }
+    else if (it.kind === 'video' && ['mp4', 'webm', 'm4v', 'mov'].includes(it.ext)) { const vd = document.createElement('video'); vd.controls = true; vd.playsInline = true; vd.src = URL.createObjectURL(await rawBlob(it)); body.innerHTML = ''; body.append(vd); }
+    else if (it.ext === 'pdf') { const fr = document.createElement('iframe'); fr.style.cssText = 'width:100%;height:78vh;border:0'; fr.src = URL.createObjectURL(new Blob([await rawBlob(it)], { type: 'application/pdf' })); body.innerHTML = ''; body.append(fr); }
     else { $('viewModal').classList.remove('show'); return download(it); }
-  }catch(e){ body.innerHTML='<pre>불러오기 실패</pre>'; }
-  const bar=document.createElement('div'); bar.className='vbar';
-  const mk=(t,c,f)=>{ const b=document.createElement('button'); b.className='btn '+c; b.textContent=t; b.onclick=f; bar.append(b); };
-  if(it.kind==='note'||it.kind==='code') mk('복사','ghost',()=>copyText(it));
-  mk('받기','ghost',()=>download(it)); mk('닫기','',()=>$('viewModal').classList.remove('show')); v.append(bar);
+  } catch (e) { body.innerHTML = '<pre>불러오기 실패</pre>'; }
+  const bar = document.createElement('div'); bar.className = 'vbar';
+  const mk = (t, c, f) => { const b = document.createElement('button'); b.className = 'btn ' + c; b.textContent = t; b.onclick = f; bar.append(b); };
+  if (it.kind === 'note' || it.kind === 'code') mk('복사', 'ghost', () => copyText(it));
+  mk('받기', 'ghost', () => download(it)); mk('닫기', '', () => $('viewModal').classList.remove('show')); v.append(bar);
 }
-$('viewModal').addEventListener('click',e=>{ if(e.target.id==='viewModal') $('viewModal').classList.remove('show'); });
+$('viewModal').addEventListener('click', e => { if (e.target.id === 'viewModal') $('viewModal').classList.remove('show'); });
 
 // ---------- 삭제 / 휴지통 ----------
-async function askDelete(list){ list=list.filter(canDel); if(!list.length) return toast('내가 올린 것만 지울 수 있어요');
-  if(!await confirmBox(list.length===1?'삭제할까요?':list.length+'개 삭제할까요?','휴지통에서 되살릴 수 있어요.','삭제')) return;
-  for(const it of list){ try{ await gh(C(it.path),{method:'DELETE',body:JSON.stringify({message:'delete|'+it.path+'|'+ME,sha:it.sha,branch:BRANCH})}); selected.delete(it.path); }catch(e){ toast('삭제 실패: '+it.name); } }
+async function askDelete(list) { list = list.filter(canDel); if (!list.length) return toast('내가 올린 것만 지울 수 있어요');
+  if (!await confirmBox(list.length === 1 ? '삭제할까요?' : list.length + '개 삭제할까요?', '휴지통에서 되살릴 수 있어요.', '삭제')) return;
+  for (const it of list) { try { await api('/api/delete', { json: { path: it.path, sha: it.sha } }); selected.delete(it.path); } catch (e) { toast('삭제 실패: ' + e.message); } }
   reload(); }
-$('trashBtn').onclick=openTrash; $('trashX').onclick=()=>$('trash').classList.remove('show');
-async function openTrash(){
-  $('trash').classList.add('show'); const box=$('trashList'); box.textContent='불러오는 중…';
-  try{
-    const commits=await gh(`/repos/${OWNER}/${REPO}/commits?sha=${BRANCH}&per_page=100`);
-    const alive=new Set(items.map(i=>i.path)), seen=new Set(), rows=[];
-    for(const c of commits){ const m=c.commit.message.split('|'); if(m[0]!=='delete'||!m[1]||seen.has(m[1])) continue; seen.add(m[1]); if(alive.has(m[1])) continue;
-      const parts=m[1].split('/'), owner=(parts[2]||'').split('_')[1]||''; rows.push({path:m[1],by:m[2]||'',owner,subj:parts[1]||'',when:new Date(c.commit.author.date).getTime(),parent:c.parents[0]&&c.parents[0].sha,
-        name:parts[0]==='notes'?'글':parts.slice(3).join('/')}); }
-    if(!rows.length){ box.textContent='휴지통이 비어 있어요.'; return; }
-    box.innerHTML=''; for(const r of rows){ const d=document.createElement('div'); d.className='trow';
-      const can=isAdmin()||r.owner===ME;
-      d.innerHTML='<div class="nm"><b></b><span></span></div>'+(can?'<button class="btn ghost">되살리기</button>':'');
-      d.querySelector('b').textContent='['+r.subj+'] '+r.name; d.querySelector('span').textContent='올린 사람 '+r.owner+' · '+r.by+'님이 '+ago(r.when)+' 삭제';
-      if(can) d.querySelector('button').onclick=async e=>{ e.target.disabled=true; try{ const blob=await gh(C(r.path)+'?ref='+r.parent,{raw:true});
-        await gh(C(r.path),{method:'PUT',body:JSON.stringify({message:'restore|'+r.path+'|'+ME,content:await fileB64(blob),branch:BRANCH})}); d.remove(); toast('되살렸어요'); reload(); }
-        catch(err){ toast('복구 실패 '+(err.status||'')); e.target.disabled=false; } };
+$('trashBtn').onclick = openTrash; $('trashX').onclick = () => $('trash').classList.remove('show');
+async function openTrash() {
+  $('trash').classList.add('show'); const box = $('trashList'); box.textContent = '불러오는 중…';
+  try {
+    const { rows } = await api('/api/trash');
+    if (!rows.length) { box.textContent = '휴지통이 비어 있어요.'; return; }
+    box.innerHTML = ''; for (const r of rows) { const d = document.createElement('div'); d.className = 'trow';
+      const parts = r.path.split('/'), can = isAdmin() || r.owner === ME;
+      d.innerHTML = '<div class="nm"><b></b><span></span></div>' + (can ? '<button class="btn ghost">되살리기</button>' : '');
+      d.querySelector('b').textContent = '[' + parts[1] + '] ' + (parts[0] === 'notes' ? '글' : parts.slice(3).join('/')); d.querySelector('span').textContent = '올린 사람 ' + r.owner + ' · ' + r.by + '님이 ' + ago(r.when) + ' 삭제';
+      if (can) d.querySelector('button').onclick = async e => { e.target.disabled = true; try { await api('/api/restore', { json: { path: r.path } }); d.remove(); toast('되살렸어요'); reload(); } catch (err) { toast('복구 실패: ' + err.message); e.target.disabled = false; } };
       box.append(d); }
-  }catch(e){ box.textContent='불러오지 못했어요 ('+(e.status||'')+')'; }
+  } catch (e) { box.textContent = '불러오지 못했어요 (' + e.message + ')'; }
+}
+
+// ---------- 비밀번호 ----------
+function pwDialog(title, msg) { return new Promise(res => { $('pwTitle').textContent = title; $('pwMsg').textContent = msg; $('pwA').value = $('pwB').value = ''; $('pwErr').textContent = ''; $('pwModal').classList.add('show'); setTimeout(() => $('pwA').focus(), 50);
+  const done = v => { $('pwModal').classList.remove('show'); $('pwYes').onclick = $('pwNo').onclick = null; res(v); };
+  $('pwNo').onclick = () => done(null);
+  $('pwYes').onclick = () => { const a = $('pwA').value; if (a.length < 6) return $('pwErr').textContent = '6자 이상이에요.'; if (a !== $('pwB').value) return $('pwErr').textContent = '두 번 입력한 게 달라요.'; done(a); }; }); }
+$('pwBtn').onclick = async () => { const pw = await pwDialog('비밀번호 변경', '새 비밀번호를 두 번 입력하세요.'); if (!pw) return;
+  try { const s = newSalt(); await api('/api/password', { json: { s, h: await hashPw(pw, s) } }); toast('비밀번호를 바꿨어요'); } catch (e) { toast('실패: ' + e.message); } };
+
+// ---------- 관리 ----------
+$('adminBtn').onclick = openAdmin; $('admX').onclick = () => $('admin').classList.remove('show');
+async function openAdmin() {
+  $('admin').classList.add('show'); const box = $('admBody'); box.textContent = '불러오는 중…';
+  let d; try { d = await api('/api/admin'); } catch (e) { box.textContent = '불러오지 못했어요 (' + e.message + ')'; return; }
+  const users = new Map(d.users.map(u => [u.n, u]));
+  const okDev = n => d.devices.some(x => x.n === n && x.st === 'ok');
+  const pend = d.devices.filter(x => x.st === 'pending').sort((a, b) => b.t - a.t), ok = d.devices.filter(x => x.st === 'ok').sort((a, b) => (b.last || b.t) - (a.last || a.t));
+  box.innerHTML = '';
+  const sec = t => { const h = document.createElement('h4'); h.textContent = t; box.append(h); };
+  const row = (title, sub, btns) => { const r = document.createElement('div'); r.className = 'trow'; r.innerHTML = '<div class="nm"><b></b><span></span></div>'; r.querySelector('b').innerHTML = title; r.querySelector('span').textContent = sub;
+    for (const [t, c, f] of btns) { const b = document.createElement('button'); b.className = 'btn ' + c; b.textContent = t; b.onclick = async () => { b.disabled = true; try { await f(); openAdmin(); load(); } catch (e) { if (e.message !== '취소') toast(e.message); b.disabled = false; } }; r.append(b); } box.append(r); };
+  const where = x => [x.ip, x.c].filter(Boolean).join(' · ');
+  sec('허용 요청 ' + pend.length + '개');
+  if (!pend.length) { const p = document.createElement('div'); p.className = 'trow'; p.style.color = 'var(--sub)'; p.textContent = '기다리는 요청이 없어요.'; box.append(p); }
+  for (const x of pend) { const newbie = !okDev(x.n);
+    row(esc(x.n) + (newbie ? '<span class="tag wait">새 가입</span>' : '<span class="tag">새 기기</span>'), x.dn + ' · ' + where(x) + ' · ' + ago(x.t),
+      [['허용', '', () => api('/api/admin/device', { json: { k: x.k, act: 'ok' } })],
+       ['거절', 'red', async () => { if (!await confirmBox('거절할까요?', newbie ? '새로 가입한 계정이라 계정도 같이 지워져요.' : '이 기기 요청만 지워져요.', '거절')) throw new Error('취소'); return api('/api/admin/device', { json: { k: x.k, act: 'del', dropUser: newbie } }); }]]); }
+  sec('허용된 기기 ' + ok.length + '개');
+  for (const x of ok) row(esc(x.n) + (users.get(x.n) && users.get(x.n).role === 'admin' ? '<span class="tag ok">관리자</span>' : ''), x.dn + ' · ' + where(x) + ' · 마지막 ' + ago(x.last || x.t),
+    [['허용 취소', 'red', async () => { if (!await confirmBox('이 기기 허용을 취소할까요?', x.n + '님의 ' + x.dn + '에서 바로 못 들어오게 돼요.', '취소하기')) throw new Error('취소'); return api('/api/admin/device', { json: { k: x.k, act: 'del' } }); }]]);
+  sec('과목 ' + subjects.length + '개');
+  for (const s of subjects) { const cnt = items.filter(i => i.subj === s).length;
+    row(esc(s), cnt ? cnt + '개 들어 있음 · 비어야 지울 수 있어요' : '비어 있음', s === '기타' || cnt ? [] : [['삭제', 'red', () => api('/api/subject-del', { json: { name: s } })]]); }
+  sec('계정 ' + d.users.length + '개');
+  for (const u of d.users.sort((a, b) => a.t - b.t)) {
+    const btns = [['비번 초기화', 'ghost', async () => { const pw = await pwDialog(u.n + ' 비밀번호 초기화', '임시 비밀번호를 정해서 본인에게 알려주세요.'); if (!pw) throw new Error('취소'); const s = newSalt(); return api('/api/admin/user', { json: { n: u.n, act: 'pw', s, h: await hashPw(pw, s) } }); }]];
+    if (u.lk) btns.unshift(['잠금 해제', 'ghost', () => api('/api/admin/user', { json: { n: u.n, act: 'unlock' } })]);
+    if (u.role !== 'admin') btns.push(['계정 삭제', 'red', async () => { if (!await confirmBox(u.n + ' 계정을 지울까요?', '모든 기기 허용도 같이 지워져요. 올린 파일은 남아요.', '삭제')) throw new Error('취소'); return api('/api/admin/user', { json: { n: u.n, act: 'del' } }); }]);
+    row(esc(u.n) + (u.role === 'admin' ? '<span class="tag ok">관리자</span>' : '') + (u.lk ? '<span class="tag wait">잠김</span>' : ''), '가입 ' + (u.t ? ago(u.t) : '-') + ' · 기기 ' + d.devices.filter(x => x.n === u.n && x.st === 'ok').length + '개', btns);
+  }
 }
 
 // ---------- 선택 / 필터 ----------
-$('selToggle').onclick=()=>{ selecting=!selecting; if(!selecting) selected.clear(); $('selToggle').textContent=selecting?'완료':'선택'; $('app').classList.toggle('selecting',selecting); updateSelbar(); render(); };
-$('selDel').onclick=()=>askDelete(items.filter(i=>selected.has(i.path)));
-$('selDown').onclick=async()=>{ const list=items.filter(i=>selected.has(i.path)); if(!list.length) return; if(list.length===1) return download(list[0]);
-  toast('묶는 중…'); const zip=new JSZip(), used=new Set();
-  for(const it of list){ let n=(it.subj+'/')+(it.kind==='note'?(it.owner+'-'+it.sha.slice(0,6)+'.txt'):it.name); while(used.has(n)) n=n.replace(/(\.[^.\/]+)?$/,m=>'-1'+m); used.add(n); try{ zip.file(n,await rawBlob(it)); }catch(e){} }
-  saveAs(await zip.generateAsync({type:'blob'}),'반공유함-'+new Date().toISOString().slice(0,10)+'.zip'); };
-$('tabs').onclick=e=>{ const b=e.target.closest('.tab'); if(!b) return; filter=b.dataset.f; document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b)); render(); };
-let qT; $('q').addEventListener('input',()=>{ clearTimeout(qT); qT=setTimeout(()=>{ query=$('q').value.trim(); render(); },150); });
-$('onlyMine').onchange=()=>{ onlyMine=$('onlyMine').checked; render(); };
-setInterval(()=>{ if(ME&&!document.hidden) load(); },60000);
+$('selToggle').onclick = () => { selecting = !selecting; if (!selecting) selected.clear(); $('selToggle').textContent = selecting ? '완료' : '선택'; $('app').classList.toggle('selecting', selecting); updateSelbar(); render(); };
+$('selDel').onclick = () => askDelete(items.filter(i => selected.has(i.path)));
+$('selDown').onclick = async () => { const list = items.filter(i => selected.has(i.path)); if (!list.length) return; if (list.length === 1) return download(list[0]);
+  toast('묶는 중…'); const zip = new JSZip(), used = new Set();
+  for (const it of list) { let n = (it.subj + '/') + (it.kind === 'note' ? (it.owner + '-' + it.sha.slice(0, 6) + '.txt') : it.name); while (used.has(n)) n = n.replace(/(\.[^.\/]+)?$/, m => '-1' + m); used.add(n); try { zip.file(n, await rawBlob(it)); } catch (e) { } }
+  saveAs(await zip.generateAsync({ type: 'blob' }), '반공유함-' + new Date().toISOString().slice(0, 10) + '.zip'); };
+$('tabs').onclick = e => { const b = e.target.closest('.tab'); if (!b) return; filter = b.dataset.f; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); render(); };
+let qT; $('q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => { query = $('q').value.trim(); render(); }, 150); });
+$('onlyMine').onchange = () => { onlyMine = $('onlyMine').checked; render(); };
+let tick = 0; setInterval(() => { tick++; if (ME && TOK && !document.hidden && (isAdmin() || tick % 3 === 0)) load(); }, 20000);
+const closers = { confirm: 'cNo', prompt: 'pNo', trash: 'trashX', admin: 'admX', pwModal: 'pwNo', subjPick: 'spNo' };
+const closeModal = m => { const c = closers[m.id]; if (c && $(c).onclick) $(c).onclick(); else m.classList.remove('show'); };
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; const ms = [...document.querySelectorAll('.modal.show')]; if (ms.length) closeModal(ms[ms.length - 1]); });
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) closeModal(m); }));
 })();
+
 </script>
 </body>
 </html>
